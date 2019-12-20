@@ -1,2 +1,5 @@
 ExUnit.start()
-Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, :manual)
+
+if GenServer.whereis(Abbr.Repo) do
+  Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, :manual)
+end

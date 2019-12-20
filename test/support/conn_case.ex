@@ -27,10 +27,12 @@ defmodule AbbrWeb.ConnCase do
   end
 
   setup tags do
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
+    if GenServer.whereis(Abbr.Repo) do
+      :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
 
-    unless tags[:async] do
-      Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
+      unless tags[:async] do
+        Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
+      end
     end
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
