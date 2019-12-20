@@ -21,8 +21,8 @@ defmodule Abbr.UrlStorage do
     GenServer.call(__MODULE__, {:fetch, short})
   end
 
-  def handle_cast({:save, %Url{short: short} = url}, table) do
-    true = :ets.insert(table, {short, url})
+  def handle_cast({:save, %Url{short: short, original: original}}, table) do
+    true = :ets.insert(table, {short, original})
     {:noreply, table}
   end
 
@@ -33,7 +33,7 @@ defmodule Abbr.UrlStorage do
   def handle_call({:fetch, short}, _from, table) do
     url =
       case :ets.lookup(table, short) do
-        [{_, url}] -> url
+        [{^short, original}] -> %Url{short: short, original: original}
         [] -> nil
       end
 
