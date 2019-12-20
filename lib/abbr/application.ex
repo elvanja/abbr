@@ -11,9 +11,15 @@ defmodule Abbr.Application do
       # Start the Ecto repository
       # Abbr.Repo,
       # Start the endpoint when the application starts
-      AbbrWeb.Endpoint
+      AbbrWeb.Endpoint,
       # Starts a worker by calling: Abbr.Worker.start_link(arg)
       # {Abbr.Worker, arg},
+      %{
+        id: Abbr.ETSTableManager,
+        start:
+          {Abbr.ETSTableManager, :start_link, [Abbr.UrlStorage, [:set, :public, :named_table]]}
+      },
+      Abbr.UrlStorage
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
