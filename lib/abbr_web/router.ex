@@ -24,6 +24,7 @@ defmodule AbbrWeb.Router do
   scope "/", AbbrWeb do
     pipe_through(:browser)
 
+    get("/health", HealthController, :check)
     get("/:short", ExpandController, :given)
   end
 end
