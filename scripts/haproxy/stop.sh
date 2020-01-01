@@ -1,0 +1,1 @@
+docker stop abbr_haproxy
