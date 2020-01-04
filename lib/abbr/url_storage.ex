@@ -17,8 +17,8 @@ defmodule Abbr.UrlStorage do
     GenServer.cast(__MODULE__, {:save, url})
   end
 
-  def fetch(short) when is_binary(short) do
-    GenServer.call(__MODULE__, {:fetch, short})
+  def lookup(short) when is_binary(short) do
+    GenServer.call(__MODULE__, {:lookup, short})
   end
 
   def handle_cast({:save, %Url{short: short, original: original}}, table) do
@@ -30,7 +30,7 @@ defmodule Abbr.UrlStorage do
     {:noreply, ETSTableManager.give_table()}
   end
 
-  def handle_call({:fetch, short}, _from, table) do
+  def handle_call({:lookup, short}, _from, table) do
     url =
       case :ets.lookup(table, short) do
         [{^short, original}] -> %Url{short: short, original: original}

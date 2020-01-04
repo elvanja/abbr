@@ -11,7 +11,7 @@ defmodule Abbr.ShortenTest do
 
   test "saves urls in storage" do
     {:ok, short} = Shorten.given("http://original.com")
-    url = UrlStorage.fetch(short)
+    url = UrlStorage.lookup(short)
     assert url.original == "http://original.com"
   end
 end
