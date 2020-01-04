@@ -1,46 +1,35 @@
 defmodule Abbr.UrlStorage do
-  use GenServer
-
   alias Abbr.ETSTableManager
   alias Abbr.Url
 
-  def start_link(_) do
-    {:ok, _} = GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
+  use ETSTableManager
+  use GenServer
 
-  def init(_) do
-    :ok = GenServer.cast(self(), :get_table)
-    {:ok, nil}
-  end
+  def table_definition, do: {__MODULE__, [:set, :public, :named_table]}
+
+  def on_receive_table(table, _state), do: table
 
   def save(%Url{} = url) do
-    GenServer.cast(__MODULE__, {:save, url})
+    GenServer.call(__MODULE__, {:save, url})
   end
 
   def lookup(short) when is_binary(short) do
-    GenServer.call(__MODULE__, {:lookup, short})
+    case :ets.lookup(__MODULE__, short) do
+      [{^short, original}] -> %Url{short: short, original: original}
+      [] -> nil
+    end
   end
 
-  def handle_cast({:save, %Url{short: short, original: original}}, table) do
+  def start_link(opts) do
+    {:ok, _} = GenServer.start_link(__MODULE__, :ok, [{:name, __MODULE__} | opts])
+  end
+
+  def init(:ok) do
+    {:ok, nil}
+  end
+
+  def handle_call({:save, %Url{short: short, original: original}}, _from, table) do
     true = :ets.insert(table, {short, original})
-    {:noreply, table}
-  end
-
-  def handle_cast(:get_table, nil) do
-    {:noreply, ETSTableManager.give_table()}
-  end
-
-  def handle_call({:lookup, short}, _from, table) do
-    url =
-      case :ets.lookup(table, short) do
-        [{^short, original}] -> %Url{short: short, original: original}
-        [] -> nil
-      end
-
-    {:reply, url, table}
-  end
-
-  def handle_info({:"ETS-TRANSFER", table, _manager_pid, _data}, _state) do
-    {:noreply, table}
+    {:reply, :ok, table}
   end
 end

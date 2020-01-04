@@ -14,11 +14,7 @@ defmodule Abbr.Application do
       AbbrWeb.Endpoint,
       # Starts a worker by calling: Abbr.Worker.start_link(arg)
       # {Abbr.Worker, arg},
-      %{
-        id: Abbr.ETSTableManager,
-        start:
-          {Abbr.ETSTableManager, :start_link, [Abbr.UrlStorage, [:set, :public, :named_table]]}
-      },
+      {Abbr.ETSTableManager, Abbr.UrlStorage},
       Abbr.UrlStorage
     ]
 
