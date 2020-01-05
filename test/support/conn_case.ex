@@ -28,13 +28,16 @@ defmodule AbbrWeb.ConnCase do
 
   setup tags do
     if GenServer.whereis(Abbr.Repo) do
+      # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
       :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
 
       unless tags[:async] do
+        # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
         Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
       end
     end
 
+    # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

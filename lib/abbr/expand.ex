@@ -1,6 +1,10 @@
 defmodule Abbr.Expand do
-  alias Abbr.Url
+  @moduledoc """
+  Expands the original URL from short one.
+  """
+
   alias Abbr.Cache
+  alias Abbr.Url
 
   def given(short) do
     case Cache.lookup(short) do

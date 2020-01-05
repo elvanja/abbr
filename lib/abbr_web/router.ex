@@ -5,7 +5,6 @@ defmodule AbbrWeb.Router do
     plug(:accepts, ["json"])
   end
 
-  # TODO maybe without protect_from_forgery and fetch_session, also put_secure_browser_headers
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
@@ -16,8 +15,6 @@ defmodule AbbrWeb.Router do
   scope "/api", AbbrWeb do
     pipe_through(:api)
 
-    # TODO GET details
-    # TODO GET stats
     post("/urls", ShortenController, :given)
   end
 

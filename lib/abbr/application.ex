@@ -3,6 +3,10 @@ defmodule Abbr.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  alias Abbr.Cache
+  alias Abbr.ETSTableManager
+  alias AbbrWeb.Endpoint
+
   use Application
 
   def start(_type, _args) do
@@ -11,11 +15,11 @@ defmodule Abbr.Application do
       # Start the Ecto repository
       # Abbr.Repo,
       # Start the endpoint when the application starts
-      AbbrWeb.Endpoint,
+      Endpoint,
       # Starts a worker by calling: Abbr.Worker.start_link(arg)
       # {Abbr.Worker, arg},
-      {Abbr.ETSTableManager, Abbr.Cache},
-      Abbr.Cache
+      {ETSTableManager, Cache},
+      Cache
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -27,7 +31,7 @@ defmodule Abbr.Application do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    AbbrWeb.Endpoint.config_change(changed, removed)
+    Endpoint.config_change(changed, removed)
     :ok
   end
 end

@@ -6,10 +6,12 @@ defmodule AbbrWeb.ExpandController do
   action_fallback AbbrWeb.FallbackController
 
   def given(conn, %{"short" => short}) do
-    with {:ok, original} <- Expand.given(short) do
-      redirect(conn, external: original)
-    else
-      _ -> send_resp(conn, 500, "")
+    case Expand.given(short) do
+      {:ok, original} ->
+        redirect(conn, external: original)
+
+      _ ->
+        send_resp(conn, 500, "")
     end
   end
 

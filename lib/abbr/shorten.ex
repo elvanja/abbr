@@ -1,4 +1,9 @@
 defmodule Abbr.Shorten do
+  @moduledoc """
+  Shortens the original URL.
+  Ensures that shortened URL information is distributed throughout the cluster.
+  """
+
   alias Abbr.Cache
   alias Abbr.Url
 

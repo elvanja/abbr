@@ -26,9 +26,11 @@ defmodule AbbrWeb.ChannelCase do
   end
 
   setup tags do
+    # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
 
     unless tags[:async] do
+      # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
       Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
     end
 
