@@ -1,6 +1,6 @@
 defmodule Abbr.Shorten do
+  alias Abbr.Cache
   alias Abbr.Url
-  alias Abbr.UrlStorage
 
   @hash_key "abbr:url"
 
@@ -10,7 +10,7 @@ defmodule Abbr.Shorten do
       original: original
     }
 
-    UrlStorage.save(url)
+    Cache.save(url)
 
     {:ok, url.short}
   end

@@ -14,8 +14,8 @@ defmodule Abbr.Application do
       AbbrWeb.Endpoint,
       # Starts a worker by calling: Abbr.Worker.start_link(arg)
       # {Abbr.Worker, arg},
-      {Abbr.ETSTableManager, Abbr.UrlStorage},
-      Abbr.UrlStorage
+      {Abbr.ETSTableManager, Abbr.Cache},
+      Abbr.Cache
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

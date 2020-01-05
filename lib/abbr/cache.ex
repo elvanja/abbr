@@ -1,4 +1,4 @@
-defmodule Abbr.UrlStorage do
+defmodule Abbr.Cache do
   alias Abbr.ETSTableManager
   alias Abbr.Url
 
