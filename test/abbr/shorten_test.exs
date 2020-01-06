@@ -9,7 +9,7 @@ defmodule Abbr.ShortenTest do
     assert {:ok, ^short} = Shorten.given("http://original.com")
   end
 
-  test "saves urls in storage" do
+  test "saves urls in cache" do
     {:ok, short} = Shorten.given("http://original.com")
     url = Cache.lookup(short)
     assert url.original == "http://original.com"

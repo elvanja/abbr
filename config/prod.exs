@@ -11,7 +11,10 @@ use Mix.Config
 # before starting your production server.
 config :abbr, AbbrWeb.Endpoint,
   http: [:inet6, port: {:system, :integer, "HTTP_PORT", 4000}],
-  url: [host: {:system, :string, "ABBR_HOST", "abbr.io"}, port: {:system, :integer, "ABBR_PORT", 80}]
+  url: [
+    host: {:system, :string, "ABBR_HOST", "abbr.io"},
+    port: {:system, :integer, "ABBR_PORT", 80}
+  ]
 
 # Do not print debug messages in production
 config :logger, level: :info

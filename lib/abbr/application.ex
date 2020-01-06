@@ -7,13 +7,16 @@ defmodule Abbr.Application do
 
   def start(_type, _args) do
     Confex.resolve_env!(:abbr)
+    :pg2.create(:abbr_cluster_cache)
+
     topologies = Confex.fetch_env!(:libcluster, :topologies)
 
     children = [
       {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},
       AbbrWeb.Endpoint,
-      {Abbr.ETSTableManager, Abbr.Cache},
-      Abbr.Cache
+      Abbr.ClusterCache,
+      {Abbr.ETSTableManager, Abbr.LocalCache},
+      Abbr.LocalCache
     ]
 
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]
