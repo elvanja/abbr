@@ -33,10 +33,12 @@ defmodule Abbr.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:confex, "~> 3.4.0"},
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
       {:ecto_sql, "~> 3.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
+      {:libcluster, "~> 3.1"},
       {:phoenix, "~> 1.4.1"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
