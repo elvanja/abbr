@@ -6,7 +6,8 @@ defmodule Abbr.Expand do
   alias Abbr.Cache
   alias Abbr.Url
 
-  def given(short) do
+  @spec given(Url.short()) :: {:ok, %Url{}} | {:error, :not_found}
+  def given(short) when is_binary(short) do
     case Cache.lookup(short) do
       %Url{original: original} -> {:ok, original}
       _ -> {:error, :not_found}

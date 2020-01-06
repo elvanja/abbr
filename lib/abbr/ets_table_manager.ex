@@ -10,11 +10,11 @@ defmodule Abbr.ETSTableManager do
 
   use GenServer
 
-  @type table_name :: any()
-  @type ets_options :: []
+  @type table_name :: atom()
+  @type ets_options :: list(any())
   @callback table_definition() :: {table_name(), ets_options()}
 
-  @type table :: any()
+  @type table :: :ets.tid()
   @type state :: any()
   @callback on_receive_table(table(), state()) :: state()
 
@@ -28,16 +28,19 @@ defmodule Abbr.ETSTableManager do
     end
   end
 
+  @spec start_link(atom()) :: {:ok, pid()}
   def start_link(target_module) do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok)
     GenServer.cast(pid, {:create_table, target_module})
     {:ok, pid}
   end
 
+  @impl GenServer
   def init(:ok) do
     {:ok, nil}
   end
 
+  @impl GenServer
   def handle_cast({:create_table, target_module}, _state) do
     {name, ets_options} = target_module.table_definition()
     table = :ets.new(name, [{:heir, self(), {}} | ets_options])
@@ -45,6 +48,7 @@ defmodule Abbr.ETSTableManager do
     {:noreply, {table, target_module}}
   end
 
+  @impl GenServer
   def handle_info({:"ETS-TRANSFER", table, _pid, _data}, {_, target_module} = state) do
     give_away(table, target_module)
     {:noreply, state}

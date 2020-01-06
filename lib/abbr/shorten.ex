@@ -9,6 +9,7 @@ defmodule Abbr.Shorten do
 
   @hash_key "abbr:url"
 
+  @spec given(Url.original()) :: {:ok, Url.short()}
   def given(original) do
     url = %Url{
       short: hash_original(original),

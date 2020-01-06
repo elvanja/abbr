@@ -6,16 +6,15 @@ defmodule AbbrWeb.ShortenController do
   action_fallback AbbrWeb.FallbackController
 
   def given(conn, %{"url" => original}) do
-    case Shorten.given(original) do
-      {:ok, short} ->
-        full_short_url = Routes.expand_url(conn, :given, short)
+    # credo:disable-for-lines:1 Credo.Check.Refactor.WithClauses
+    with {:ok, short} <- Shorten.given(original) do
+      full_short_url = Routes.expand_url(conn, :given, short)
 
-        conn
-        |> put_status(:created)
-        |> json(%{short_url: full_short_url})
-
-      _ ->
-        send_resp(conn, 500, "")
+      conn
+      |> put_status(:created)
+      |> json(%{short_url: full_short_url})
+    else
+      _ -> send_resp(conn, 500, "")
     end
   end
 

@@ -10,7 +10,8 @@ defmodule Abbr.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer(Mix.env())
     ]
   end
 
@@ -28,6 +29,22 @@ defmodule Abbr.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
+  defp dialyzer(:test) do
+    [
+      plt_add_deps: :transitive,
+      plt_add_apps: [:ex_unit, :mix],
+      plt_core_path: "priv/plts",
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"}
+    ]
+  end
+
+  defp dialyzer(_) do
+    [
+      plt_add_deps: :transitive,
+      plt_add_apps: [:mix]
+    ]
+  end
+
   # Specifies your project dependencies.
   #
   # Type `mix help deps` for examples and options.
@@ -35,6 +52,7 @@ defmodule Abbr.MixProject do
     [
       {:confex, "~> 3.4.0"},
       {:credo, "~> 1.1.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:ecto_sql, "~> 3.0"},
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},

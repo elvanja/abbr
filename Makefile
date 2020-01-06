@@ -31,3 +31,5 @@ ci:
 	mix test || exit 1
 	echo "Running credo..."
 	mix credo --strict || exit 1
+	echo "Running dialyzer..."
+	mix dialyzer || exit 1
