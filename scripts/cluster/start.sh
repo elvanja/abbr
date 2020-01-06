@@ -38,7 +38,7 @@ fi
 
 MIX_ENV=prod mix do compile
 for instance_id in "${instance_ids[@]}"; do
-  MIX_ENV=prod PORT=400$instance_id elixir --erl "-detached" --sname abbr$instance_id -S mix phx.server
+  MIX_ENV=prod HTTP_PORT=400$instance_id ABBR_HOST=localhost ABBR_PORT=4000 elixir --erl "-detached" --sname abbr$instance_id -S mix phx.server
 done
 
 echo "cluster started"

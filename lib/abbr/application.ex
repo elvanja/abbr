@@ -6,6 +6,7 @@ defmodule Abbr.Application do
   use Application
 
   def start(_type, _args) do
+    Confex.resolve_env!(:abbr)
     topologies = Confex.fetch_env!(:libcluster, :topologies)
 
     children = [
