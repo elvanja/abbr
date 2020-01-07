@@ -28,6 +28,17 @@ defmodule Abbr.LocalCache do
     end
   end
 
+  @spec export :: list(any())
+  def export, do: :ets.tab2list(__MODULE__)
+
+  @spec merge(list(any())) :: :ok
+  def merge([]), do: :ok
+
+  def merge(list) do
+    true = :ets.insert(__MODULE__, list)
+    :ok
+  end
+
   @spec start_link([any()]) :: {:ok, pid()}
   def start_link(opts) do
     {:ok, _} = GenServer.start_link(__MODULE__, :ok, [{:name, __MODULE__} | opts])

@@ -1,7 +1,7 @@
 deps: mix.lock mix.exs
 	mix deps.get
 
-server: update
+server: deps
 	iex -S mix phx.server
 
 test:
@@ -13,10 +13,10 @@ start_proxy:
 stop_proxy:
 	scripts/haproxy/stop.sh
 
-start_dev:
+start_dev: deps
 	HTTP_PORT=400${INSTANCE} iex --sname abbr${INSTANCE} -S mix phx.server
 
-start_prod:
+start_prod: deps
 	scripts/cluster/start.sh ${ARGS}
 
 stop_prod:

@@ -13,7 +13,12 @@ defmodule Abbr.Application do
 
     children = [
       {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},
+      %{
+        id: Abbr.PubSub,
+        start: {Phoenix.PubSub.Local, :start_link, [:abbr_pubsub, :abbr_pubsub_gc]}
+      },
       AbbrWeb.Endpoint,
+      Abbr.Health,
       Abbr.ClusterCache,
       {Abbr.ETSTableManager, Abbr.LocalCache},
       Abbr.LocalCache
