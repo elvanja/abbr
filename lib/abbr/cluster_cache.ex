@@ -58,9 +58,7 @@ defmodule Abbr.ClusterCache do
     other_members = :pg2.get_members(@pg2_group) -- [self()]
 
     other_members
-    |> Enum.flat_map(fn pid ->
-      GenServer.call(pid, :export)
-    end)
+    |> Enum.flat_map(& GenServer.call(&1, :export))
     |> LocalCache.merge()
   end
 end

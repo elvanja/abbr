@@ -16,8 +16,9 @@ defmodule Abbr.LocalCache do
   def on_receive_table(table, _state), do: table
 
   @spec save(%Url{}) :: :ok
-  def save(%Url{} = url) do
-    GenServer.call(__MODULE__, {:save, url})
+  def save(%Url{short: short, original: original}) do
+    true = :ets.insert(__MODULE__, {short, original})
+    :ok
   end
 
   @spec lookup(Url.short()) :: %Url{} | nil
@@ -47,11 +48,5 @@ defmodule Abbr.LocalCache do
   @impl GenServer
   def init(:ok) do
     {:ok, nil}
-  end
-
-  @impl GenServer
-  def handle_call({:save, %Url{short: short, original: original}}, _from, table) do
-    true = :ets.insert(table, {short, original})
-    {:reply, :ok, table}
   end
 end
