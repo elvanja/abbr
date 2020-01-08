@@ -13,13 +13,13 @@ start_proxy:
 stop_proxy:
 	scripts/haproxy/stop.sh
 
-start_dev: deps
-	HTTP_PORT=400${INSTANCE} iex --sname abbr${INSTANCE} -S mix phx.server
+open_proxy:
+	open http://localhost:8080
 
-start_prod: deps
+start_cluster: deps
 	scripts/cluster/start.sh ${ARGS}
 
-stop_prod:
+stop_cluster:
 	scripts/cluster/stop.sh ${ARGS}
 
 ci:
