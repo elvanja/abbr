@@ -19,9 +19,9 @@ defmodule Abbr.Application do
       },
       AbbrWeb.Endpoint,
       Abbr.Health,
-      Abbr.ClusterCache,
       {Abbr.ETSTableManager, Abbr.LocalCache},
-      Abbr.LocalCache
+      Abbr.LocalCache,
+      Abbr.ClusterCache
     ]
 
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]

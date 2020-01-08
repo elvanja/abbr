@@ -33,8 +33,6 @@ defmodule Abbr.LocalCache do
   def export, do: :ets.tab2list(__MODULE__)
 
   @spec merge(list(any())) :: :ok
-  def merge([]), do: :ok
-
   def merge(list) do
     true = :ets.insert(__MODULE__, list)
     :ok
