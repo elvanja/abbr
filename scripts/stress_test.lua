@@ -25,6 +25,7 @@ math.random(); math.random(); math.random(); math.random(); math.random()
 
 -- So we can track custom metrics
 local threads = {}
+local short_urls_count = 100
 
 function create_short_url(shorten_endpoint_url, long_url)
   local curl_command = "curl -s -X POST -H 'Content-type: application/json' -d '{\"url\":\"" .. long_url .. "\"}' " .. shorten_endpoint_url
@@ -42,17 +43,23 @@ end
 
 function init(args)
   local shorten_endpoint_url = string.format("%s://%s:%s/api/urls", wrk.scheme, wrk.host, wrk.port)
-  local long_url = args[1] .. "?q=" .. id
+  local long_url_base = args[1] .. "?q=" .. id
   local debug = args[2] or false
-  short_url_id = create_short_url(shorten_endpoint_url, long_url)
-  statuses = {}
-  if debug then
-    print(short_url_id .. ": " .. long_url)
+
+  short_url_ids = {}
+  for i = 1, short_urls_count do
+    long_url = long_url_base .. "-" .. i
+    short_url_ids[i] = create_short_url(shorten_endpoint_url, long_url)
+    if debug then
+      print(short_url_ids[i] .. ": " .. long_url)
+    end
   end
+
+  statuses = {}
 end
 
 function request()
-  return wrk.format("GET", "/" .. short_url_id)
+  return wrk.format("GET", "/" .. short_url_ids[math.random(short_urls_count)])
 end
 
 function response(status, _headers, _body)
