@@ -27,7 +27,7 @@ config :phoenix, :json_library, Jason
 
 config :libcluster,
   topologies: [
-    gossip: [
+    local: [
       strategy: Cluster.Strategy.Gossip,
       connect: {:net_kernel, :connect_node, []},
       disconnect: {:erlang, :disconnect_node, []},

@@ -67,7 +67,7 @@ function response(status, _headers, _body)
 end
 
 function done(_summary, _latency, _requests)
-  statuses = {}
+  local statuses = {}
 
   for _index, thread in ipairs(threads) do
     for status, count in pairs(thread:get("statuses")) do

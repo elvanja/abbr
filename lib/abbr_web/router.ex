@@ -16,6 +16,8 @@ defmodule AbbrWeb.Router do
     pipe_through(:api)
 
     post("/urls", ShortenController, :given)
+    post("/cluster/leave", ClusterController, :leave)
+    post("/cluster/join", ClusterController, :join)
   end
 
   scope "/", AbbrWeb do

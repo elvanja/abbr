@@ -22,6 +22,12 @@ start_cluster: deps
 stop_cluster:
 	scripts/cluster/stop.sh ${ARGS}
 
+join_cluster:
+	scripts/cluster/join.sh ${ARGS}
+
+leave_cluster:
+	scripts/cluster/leave.sh ${ARGS}
+
 ci:
 	echo "Running formatter..."
 	mix format --check-formatted || exit 1
