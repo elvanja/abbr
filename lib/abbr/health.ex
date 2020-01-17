@@ -31,4 +31,9 @@ defmodule Abbr.Health do
   def handle_info({:cache_event, :synchronized}, _state) do
     {:noreply, true}
   end
+
+  @impl GenServer
+  def handle_info(_msg, state) do
+    {:noreply, state}
+  end
 end

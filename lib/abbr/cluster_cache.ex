@@ -33,6 +33,7 @@ defmodule Abbr.ClusterCache do
 
   @impl GenServer
   def init(:ok) do
+    :net_kernel.monitor_nodes(true)
     :ok = :pg2.join(@pg2_group, self())
     {:ok, nil}
   end
@@ -49,16 +50,46 @@ defmodule Abbr.ClusterCache do
 
   @impl GenServer
   def handle_cast(:synchronize, state) do
-    do_synchronize()
-    PubSub.broadcast(Abbr.PubSub, @events_topic, {:cache_event, :synchronized})
-    {:noreply, state}
-  end
-
-  defp do_synchronize do
     other_members = :pg2.get_members(@pg2_group) -- [self()]
 
     other_members
     |> Enum.flat_map(&GenServer.call(&1, :export))
     |> LocalCache.merge()
+
+    PubSub.broadcast(Abbr.PubSub, @events_topic, {:cache_event, :synchronized})
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info({:nodeup, node}, state) do
+    Process.send(self(), {:wait_for_cluster_cache, node}, [:noconnect])
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info({:wait_for_cluster_cache, node}, state) do
+    if cluster_cache_alive?(node) do
+      GenServer.cast(self(), :synchronize)
+    else
+      Process.send_after(self(), {:wait_for_cluster_cache, node}, 100)
+    end
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info(_msg, state) do
+    {:noreply, state}
+  end
+
+  defp cluster_cache_alive?(node) do
+    case :rpc.call(node, Process, :whereis, [__MODULE__]) do
+      pid when is_pid(pid) ->
+        :rpc.call(node, Process, :alive?, [pid])
+
+      _ ->
+        false
+    end
   end
 end
