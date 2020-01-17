@@ -7,9 +7,9 @@ defmodule Abbr.Application do
 
   def start(_type, _args) do
     Confex.resolve_env!(:abbr)
-    :pg2.create(:abbr_cluster_cache)
-
     topologies = Confex.fetch_env!(:libcluster, :topologies)
+
+    :pg2.create(Abbr.Constants.cluster_cache_group_name())
 
     children = [
       {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},

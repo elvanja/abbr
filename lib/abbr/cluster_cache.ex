@@ -3,6 +3,7 @@ defmodule Abbr.ClusterCache do
   Handles distributing cache save to entire cluster
   """
 
+  alias Abbr.Constants
   alias Abbr.LocalCache
   alias Abbr.Url
   alias Phoenix.PubSub
@@ -10,7 +11,7 @@ defmodule Abbr.ClusterCache do
   use GenServer
 
   @events_topic "cache_events"
-  @pg2_group :abbr_cluster_cache
+  @pg2_group Constants.cluster_cache_group_name()
 
   @spec save(%Url{}) :: :ok
   def save(url) do
