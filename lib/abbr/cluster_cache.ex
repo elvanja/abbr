@@ -10,6 +10,8 @@ defmodule Abbr.ClusterCache do
 
   use GenServer
 
+  require Logger
+
   @events_topic "cache_events"
   @pg2_group Constants.cluster_cache_group_name()
 
@@ -28,7 +30,8 @@ defmodule Abbr.ClusterCache do
   @spec start_link([any()]) :: {:ok, pid()}
   def start_link(opts) do
     {:ok, pid} = GenServer.start_link(__MODULE__, :ok, [{:name, __MODULE__} | opts])
-    GenServer.cast(pid, :synchronize)
+    Logger.debug("started as #{inspect(pid)}")
+    GenServer.cast(pid, :synchronize_on_startup)
     {:ok, pid}
   end
 
@@ -50,32 +53,55 @@ defmodule Abbr.ClusterCache do
   end
 
   @impl GenServer
-  def handle_cast(:synchronize, state) do
+  def handle_cast(:synchronize_on_startup, state) do
     other_members = :pg2.get_members(@pg2_group) -- [self()]
+    Logger.debug("synchronizing on startup, from: #{inspect(other_members)}")
 
     other_members
     |> Enum.flat_map(&GenServer.call(&1, :export))
     |> LocalCache.merge()
 
     PubSub.broadcast(Abbr.PubSub, @events_topic, {:cache_event, :synchronized})
+    Logger.debug("finished synchronizing on startup")
 
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_info({:nodeup, node}, state) do
-    Process.send(self(), {:wait_for_cluster_cache, node}, [:noconnect])
+    Logger.debug("received :nodeup #{node}")
+    Process.send(self(), {:wait_for_cluster_cache, node}, [])
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_info({:wait_for_cluster_cache, node}, state) do
-    if cluster_cache_alive?(node) do
-      GenServer.cast(self(), :synchronize)
+    if source = cluster_cache_process(node) do
+      Logger.debug("triggering export from #{inspect(source)}")
+      Process.send(source, {:export_to, self()}, [])
     else
-      Process.send_after(self(), {:wait_for_cluster_cache, node}, 100)
+      Process.send_after(
+        self(),
+        {:wait_for_cluster_cache, node},
+        Constants.cluster_cache_wait_ms()
+      )
     end
 
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info({:export_to, destination}, state) do
+    Logger.debug("exporting to #{inspect(destination)}")
+    Process.send(destination, {:merge, LocalCache.export(), self()}, [])
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info({:merge, data, from}, state) do
+    Logger.debug("merging from #{inspect(from)}")
+    LocalCache.merge(data)
+    Logger.debug("cache merged")
     {:noreply, state}
   end
 
@@ -84,13 +110,17 @@ defmodule Abbr.ClusterCache do
     {:noreply, state}
   end
 
-  defp cluster_cache_alive?(node) do
+  defp cluster_cache_process(node) do
     case :rpc.call(node, Process, :whereis, [__MODULE__]) do
       pid when is_pid(pid) ->
-        :rpc.call(node, Process, :alive?, [pid])
+        members = :pg2.get_members(@pg2_group)
+
+        if Enum.member?(members, pid) do
+          pid
+        end
 
       _ ->
-        false
+        nil
     end
   end
 end
