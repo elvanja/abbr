@@ -17,7 +17,9 @@ config :abbr, AbbrWeb.Endpoint,
   ]
 
 # Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  level: :info,
+  compile_time_purge_matching: [[level_lower_than: :info]]
 
 # ## SSL Support
 #
