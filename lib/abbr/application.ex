@@ -9,6 +9,7 @@ defmodule Abbr.Application do
     Confex.resolve_env!(:abbr)
     topologies = Confex.fetch_env!(:libcluster, :topologies)
 
+    # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
     :pg2.create(Abbr.Constants.cluster_cache_group_name())
 
     children = [
@@ -21,7 +22,8 @@ defmodule Abbr.Application do
       Abbr.Health,
       {Abbr.ETSTableManager, [target_module: Abbr.LocalCache]},
       Abbr.LocalCache,
-      Abbr.ClusterCache
+      Abbr.ClusterCache.SyncOnStartup,
+      {Abbr.ClusterCache.Monitor, [cache_process_name: Abbr.ClusterCache.SyncOnStartup]}
     ]
 
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]

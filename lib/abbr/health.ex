@@ -3,7 +3,7 @@ defmodule Abbr.Health do
   Carries information on whether this instance is in good health or not
   """
 
-  alias Abbr.ClusterCache
+  alias Abbr.Cache
   alias Phoenix.PubSub
 
   use GenServer
@@ -18,7 +18,7 @@ defmodule Abbr.Health do
 
   @impl GenServer
   def init(:ok) do
-    PubSub.subscribe(Abbr.PubSub, ClusterCache.events_topic())
+    PubSub.subscribe(Abbr.PubSub, Cache.events_topic())
     {:ok, false}
   end
 
