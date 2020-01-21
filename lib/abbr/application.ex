@@ -19,7 +19,7 @@ defmodule Abbr.Application do
       },
       AbbrWeb.Endpoint,
       Abbr.Health,
-      {Abbr.ETSTableManager, Abbr.LocalCache},
+      {Abbr.ETSTableManager, [target_module: Abbr.LocalCache]},
       Abbr.LocalCache,
       Abbr.ClusterCache
     ]

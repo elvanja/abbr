@@ -28,9 +28,10 @@ defmodule Abbr.ETSTableManager do
     end
   end
 
-  @spec start_link(atom()) :: {:ok, pid()}
-  def start_link(target_module) do
-    {:ok, pid} = GenServer.start_link(__MODULE__, :ok)
+  @spec start_link([any()]) :: {:ok, pid()}
+  def start_link(opts) do
+    target_module = Keyword.fetch!(opts, :target_module)
+    {:ok, pid} = GenServer.start_link(__MODULE__, :ok, opts)
     GenServer.cast(pid, {:create_table, target_module})
     {:ok, pid}
   end
