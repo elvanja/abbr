@@ -1,3 +1,5 @@
+:ok = LocalCluster.start()
+Application.ensure_all_started(:abbr)
 ExUnit.start()
 
 if GenServer.whereis(Abbr.Repo) do

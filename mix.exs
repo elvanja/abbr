@@ -57,11 +57,13 @@ defmodule Abbr.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:libcluster, "~> 3.1"},
+      {:local_cluster, "~> 1.1", only: [:dev, :test]},
       {:phoenix, "~> 1.4.1"},
       {:phoenix_pubsub, "~> 1.1"},
       {:phoenix_ecto, "~> 4.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:schism, "~> 1.0", only: [:dev, :test]}
     ]
   end
 
@@ -75,7 +77,7 @@ defmodule Abbr.MixProject do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test --no-start"]
     ]
   end
 end
