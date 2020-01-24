@@ -1,10 +1,11 @@
-defmodule Abbr.ClusterCacheTest do
+defmodule Abbr.ClusterCache.MonitorTest do
   use Abbr.DataCase, async: false
 
   alias Abbr.Cache
   alias Abbr.Url
 
   setup_all do
+    Application.put_env(:abbr, :cluster_strategy, "monitor")
     nodes = LocalCluster.start_nodes("abbr", 2)
     [nodes: nodes]
   end
