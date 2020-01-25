@@ -7,12 +7,9 @@ defmodule Abbr.Application do
 
   def start(_type, _args) do
     Confex.resolve_env!(:abbr)
-    topologies = Confex.fetch_env!(:libcluster, :topologies)
+    topologies = Confex.fetch_env!(:abbr, :topologies)
 
-    # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-    :pg2.create(Abbr.Constants.cluster_cache_group_name())
-
-    usual_children = [
+    children = [
       {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},
       %{
         id: Abbr.PubSub,
@@ -21,29 +18,12 @@ defmodule Abbr.Application do
       AbbrWeb.Endpoint,
       Abbr.Health,
       {Abbr.ETSTableManager, [target_module: Abbr.LocalCache]},
-      Abbr.LocalCache
+      Abbr.LocalCache,
+      Abbr.CacheMonitor
     ]
 
-    cluster_cache_children =
-      case Application.get_env(:abbr, :cluster_strategy, "monitor") do
-        "basic" ->
-          [Abbr.ClusterCache.Basic]
-
-        "sync_on_startup" ->
-          [Abbr.ClusterCache.SyncOnStartup]
-
-        "nodeup_via_process_send" ->
-          [Abbr.ClusterCache.NodeupViaProcessSend]
-
-        "monitor" ->
-          [
-            Abbr.ClusterCache.SyncOnStartup,
-            {Abbr.ClusterCache.Monitor, [cache_process_name: Abbr.ClusterCache.SyncOnStartup]}
-          ]
-      end
-
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]
-    Supervisor.start_link(usual_children ++ cluster_cache_children, opts)
+    Supervisor.start_link(children, opts)
   end
 
   # Tell Phoenix to update the endpoint configuration

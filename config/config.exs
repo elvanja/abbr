@@ -25,7 +25,10 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :libcluster,
+# Need to place libcluster config under :abbr due to local_cluster issue
+# so the configuration is propagated correctly to test nodes
+# see https://github.com/whitfin/local-cluster/issues/13 for details
+config :abbr,
   topologies: [
     local: [
       strategy: Cluster.Strategy.Gossip,

@@ -9,16 +9,17 @@ defmodule Abbr.Shorten do
 
   @hash_key "abbr:url"
 
-  @spec given(Url.original()) :: {:ok, Url.short()}
+  @spec given(Url.original()) :: {:ok, Url.short()} | :error
   def given(original) do
     url = %Url{
       short: hash_original(original),
       original: original
     }
 
-    Cache.save(url)
-
-    {:ok, url.short}
+    case Cache.save(url) do
+      :ok -> {:ok, url.short}
+      :error -> :error
+    end
   end
 
   defp hash_original(original) do
