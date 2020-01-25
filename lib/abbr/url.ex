@@ -7,13 +7,23 @@ defmodule Abbr.Url do
   - short - contains only the hash value of the shortened URL
   """
 
-  use Ecto.Schema
+  alias __MODULE__
 
-  @type original :: String.t()
+  @enforce_keys [
+    :short,
+    :original
+  ]
+
+  defstruct [
+    :short,
+    :original
+  ]
+
   @type short :: String.t()
+  @type original :: String.t()
 
-  embedded_schema do
-    field :original, :string
-    field :short, :string
-  end
+  @type t :: %Url{
+          short: short(),
+          original: original()
+        }
 end
