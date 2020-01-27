@@ -12,7 +12,7 @@ OPTIONS:
   -i      instance to stop, default: all
 
 EOF
-exit 1
+exit 0
 }
 
 INSTANCE=
@@ -31,8 +31,12 @@ if [ "$INSTANCE" == "1" ]; then
   report="stopped instance 1"
 elif [ "$INSTANCE" == "2" ]; then
   report="stopped instance 2"
-else
+elif [ "$INSTANCE" == "all" ]; then
+  INSTANCE=
   report="stopped both instances"
+else
+  echo "invalid instance to stop"
+  exit 1
 fi
 
 ps aux | grep "[a]bbr$INSTANCE" | awk '{print $2}' | xargs sudo kill

@@ -12,7 +12,7 @@ OPTIONS:
   -i      instance to join
 
 EOF
-exit 1
+exit 0
 }
 
 INSTANCE=

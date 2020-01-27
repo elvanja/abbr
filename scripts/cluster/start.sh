@@ -13,7 +13,7 @@ OPTIONS:
   -e      environment, default: prod
 
 EOF
-exit 1
+exit 0
 }
 
 INSTANCE=
@@ -38,11 +38,14 @@ if [ "$INSTANCE" == "1" ]; then
 elif [ "$INSTANCE" == "2" ]; then
   instance_ids+=(2)
   report="started instance 2"
-else
+elif [ "$INSTANCE" == "all" ]; then
   instance_ids+=(1)
   instance_ids+=(2)
   report="started both instances"
   dev_ok=false
+else
+  echo "invalid instance to start"
+  exit 1
 fi
 
 if [ "$ENV" == "dev" ]; then

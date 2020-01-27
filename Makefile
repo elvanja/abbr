@@ -16,17 +16,30 @@ stop_proxy:
 open_proxy:
 	open http://localhost:8080
 
+INSTANCE?=all
+ENV?=prod
 start_cluster: deps
-	scripts/cluster/start.sh ${ARGS}
+	scripts/cluster/start.sh -i ${INSTANCE} -e ${ENV}
 
+INSTANCE?=all
 stop_cluster:
-	scripts/cluster/stop.sh ${ARGS}
+	scripts/cluster/stop.sh -i ${INSTANCE}
 
 join_cluster:
-	scripts/cluster/join.sh ${ARGS}
+	scripts/cluster/join.sh -i ${INSTANCE}
 
 leave_cluster:
-	scripts/cluster/leave.sh ${ARGS}
+	scripts/cluster/leave.sh -i ${INSTANCE}
+
+INSTANCES?=2
+split_cluster_repeatedly:
+	scripts/repeatedly.sh -c "scripts/cluster/net_split.sh -i ${INSTANCES}" -d ${DURATION} ${OPTS}
+
+CONNECTIONS?=50
+THREADS?=10
+DURATION?=1m
+stress_test_cluster:
+	wrk -s scripts/stress_test.lua -c${CONNECTIONS} -t${THREADS} -d${DURATION} http://localhost:4000 -- ${BASE_URL}
 
 ci:
 	echo "Running formatter..."

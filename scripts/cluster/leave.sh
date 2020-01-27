@@ -12,7 +12,7 @@ OPTIONS:
   -i      instance to leave
 
 EOF
-exit 1
+exit 0
 }
 
 INSTANCE=
