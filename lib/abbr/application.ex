@@ -19,7 +19,7 @@ defmodule Abbr.Application do
       Abbr.Health,
       {Abbr.ETSTableManager, [target_module: Abbr.LocalCache]},
       Abbr.LocalCache,
-      Abbr.CacheMonitor
+      Abbr.LocalCacheSync
     ]
 
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]

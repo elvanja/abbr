@@ -25,7 +25,7 @@ defmodule Abbr.Cache do
         # successfully saved data can be safely ignored
         # new attempts to save the same URL will overwrite the data
         # the only downside being memory used by unreachable data
-        Logger.error("Could not save #{url} to: #{inspect(failed_nodes)}")
+        Logger.error("Could not save #{inspect(url)} to: #{inspect(failed_nodes)}")
         :error
     end
   end
