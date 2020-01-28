@@ -13,6 +13,9 @@ start_proxy:
 stop_proxy:
 	scripts/haproxy/stop.sh
 
+rebuild_proxy:
+	scripts/haproxy/rebuild.sh
+
 open_proxy:
 	open http://localhost:8080
 
