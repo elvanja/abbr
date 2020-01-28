@@ -10,8 +10,8 @@ defmodule AbbrWeb.ExpandController do
       {:ok, original} ->
         redirect(conn, external: original)
 
-      _ ->
-        send_resp(conn, 500, "")
+      {:error, :not_found} ->
+        send_resp(conn, 404, "")
     end
   end
 
