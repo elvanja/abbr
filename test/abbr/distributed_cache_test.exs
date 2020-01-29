@@ -3,7 +3,6 @@ defmodule Abbr.DistributedCacheTest do
 
   alias Abbr.Cache
   alias Abbr.Url
-  alias Ecto.UUID
 
   @node_prefix "abbr_distributed_cache_cluster_"
 
@@ -118,14 +117,12 @@ defmodule Abbr.DistributedCacheTest do
   end
 
   defp build_urls(count) do
-    Enum.map(1..count, fn _ -> build_url() end)
-  end
-
-  defp build_url do
-    %Url{
-      short: UUID.generate(),
-      original: "http://www.home_of_long_urls.com?q=some+very+long+param+list"
-    }
+    Enum.map(1..count, fn index ->
+      %Url{
+        short: "#{:os.system_time()}_#{index}",
+        original: "http://www.home_of_long_urls.com?q=some+very+long+param+list&index=#{index}"
+      }
+    end)
   end
 
   def eventually(f, retries \\ 0) do

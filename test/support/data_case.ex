@@ -16,43 +16,7 @@ defmodule Abbr.DataCase do
 
   using do
     quote do
-      alias Abbr.Repo
-
-      import Ecto
-      import Ecto.Changeset
-      import Ecto.Query
       import Abbr.DataCase
     end
-  end
-
-  setup tags do
-    if GenServer.whereis(Abbr.Repo) do
-      # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-      :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
-
-      unless tags[:async] do
-        # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-        Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
-      end
-    end
-
-    :ok
-  end
-
-  @doc """
-  A helper that transforms changeset errors into a map of messages.
-
-      assert {:error, changeset} = Accounts.create_user(%{password: "short"})
-      assert "password is too short" in errors_on(changeset).password
-      assert %{password: ["password is too short"]} = errors_on(changeset)
-
-  """
-  def errors_on(changeset) do
-    # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
-      Enum.reduce(opts, message, fn {key, value}, acc ->
-        String.replace(acc, "%{#{key}}", to_string(value))
-      end)
-    end)
   end
 end

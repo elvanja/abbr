@@ -17,26 +17,14 @@ defmodule AbbrWeb.ConnCase do
 
   using do
     quote do
-      # Import conveniences for testing with connections
       use Phoenix.ConnTest
       alias AbbrWeb.Router.Helpers, as: Routes
 
-      # The default endpoint for testing
       @endpoint AbbrWeb.Endpoint
     end
   end
 
-  setup tags do
-    if GenServer.whereis(Abbr.Repo) do
-      # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-      :ok = Ecto.Adapters.SQL.Sandbox.checkout(Abbr.Repo)
-
-      unless tags[:async] do
-        # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
-        Ecto.Adapters.SQL.Sandbox.mode(Abbr.Repo, {:shared, self()})
-      end
-    end
-
+  setup do
     # credo:disable-for-lines:1 Credo.Check.Design.AliasUsage
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
