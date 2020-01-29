@@ -107,8 +107,8 @@ defmodule Abbr.DistributedCacheTest do
   end
 
   defp add_node do
-    [new_node] = LocalCluster.start_nodes(@node_prefix <> "new_node_", 1)
-    Node.set_cookie(new_node, Node.get_cookie())
+    node_prefix = "#{@node_prefix}#{:os.system_time()}_"
+    [new_node] = LocalCluster.start_nodes(node_prefix, 1)
     new_node
   end
 
