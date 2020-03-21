@@ -62,15 +62,20 @@ Experience gained from trying out different options is the main goal.
 
 ## What approaches can I see here?
 
-Excellent question! Here's a brief overview of ideas used to tackle this.
-The order of appearance is totally arbitrary and 
+Excellent question!
+Here's a brief overview of ideas used to tackle this (the order of appearance is totally arbitrary):
+- [GenServer](https://hexdocs.pm/elixir/GenServer.html), [ETS](https://elixir-lang.org/getting-started/mix-otp/ets.html) and [RPC](http://erlang.org/doc/man/rpc.html)
+- [persistent_term](https://erlang.org/doc/man/persistent_term.html)
+- [Mnesia](https://erlang.org/doc/man/mnesia.html)
+- [Cachex](https://hexdocs.pm/cachex/getting-started.html)
+- [Nebulex](https://github.com/cabol/nebulex)
+- [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
+- [Phoenix Presence](https://hexdocs.pm/phoenix/Phoenix.Presence.html)
+- [Partisan](https://partisan.cloud)
+- [Riak Core](https://github.com/basho/riak_core)
 
- 
-
-## License
-
-This source code is released under MIT license.
-Check [LICENSE](LICENSE) for more information.
+For the moment, only the first one from the list is done.
+So stay tuned for more :-)
 
 ## Acknowledgments
 
