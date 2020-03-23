@@ -41,8 +41,10 @@ split_cluster_repeatedly:
 CONNECTIONS?=50
 THREADS?=10
 DURATION?=1m
+DEBUG?=false
+SHORT_URLS_COUNT?=
 stress_test_cluster:
-	wrk -s scripts/stress_test.lua -c${CONNECTIONS} -t${THREADS} -d${DURATION} http://localhost:4000 -- ${BASE_URL}
+	wrk -s scripts/stress_test.lua -c${CONNECTIONS} -t${THREADS} -d${DURATION} http://localhost:4000 ${BASE_URL} ${DEBUG} ${SHORT_URLS_COUNT}
 
 ci:
 	echo "Running formatter..."

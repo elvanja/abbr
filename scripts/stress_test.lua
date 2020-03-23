@@ -1,6 +1,6 @@
 --[[
 Usage:
-`wrk -s scripts/stress_test.lua --latency -c2 -t2 -d1s SERVICE_URL -- BASE_URL_TO_SHORTEN DEBUG`
+`wrk -s scripts/stress_test.lua --latency -c2 -t2 -d1s SERVICE_URL BASE_URL_TO_SHORTEN DEBUG SHORT_URLS_COUNT`
 
 SERVICE_URL represents the base address of the service itself.
 
@@ -25,7 +25,6 @@ math.random(); math.random(); math.random(); math.random(); math.random()
 
 -- So we can track custom metrics
 local threads = {}
-local short_urls_count = 100
 
 function create_short_url(shorten_endpoint_url, long_url)
   local curl_command = "curl -s -X POST -H 'Content-type: application/json' -d '{\"url\":\"" .. long_url .. "\"}' " .. shorten_endpoint_url
@@ -42,24 +41,31 @@ function setup(thread)
 end
 
 function init(args)
-  local shorten_endpoint_url = string.format("%s://%s:%s/api/urls", wrk.scheme, wrk.host, wrk.port)
-  local long_url_base = args[1] .. "?q=" .. id
-  local debug = args[2] or false
-
+  shorten_endpoint_url = string.format("%s://%s:%s/api/urls", wrk.scheme, wrk.host, wrk.port)
+  long_url_base = args[1] .. "?q=" .. id
+  debug = (args[2] == "true") and true or false
+  short_urls_count = args[3] or 100
   short_url_ids = {}
-  for i = 1, short_urls_count do
-    long_url = long_url_base .. "-" .. i
-    short_url_ids[i] = create_short_url(shorten_endpoint_url, long_url)
-    if debug then
-      print(short_url_ids[i] .. ": " .. long_url)
-    end
-  end
-
   statuses = {}
 end
 
 function request()
-  return wrk.format("GET", "/" .. short_url_ids[math.random(short_urls_count)])
+  local short_url_index = math.random(short_urls_count)
+  local short_url_id = short_url_ids[short_url_index]
+  local long_url = long_url_base .. "-" .. short_url_index
+
+  if short_url_id == nil then
+    short_url_id = create_short_url(shorten_endpoint_url, long_url)
+    short_url_ids[short_url_index] = short_url_id
+  end
+
+  if debug then
+    print(short_url_id .. ": " .. long_url)
+  end
+
+  if short_url_id then
+    return wrk.format("GET", "/" .. short_url_id)
+  end
 end
 
 function response(status, _headers, _body)
