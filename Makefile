@@ -7,14 +7,17 @@ server: deps
 test:
 	mix test $(filter-out $@, $(MAKECMDGOALS))
 
+build_proxy:
+	scripts/haproxy/build.sh
+
+rebuild_proxy:
+	scripts/haproxy/rebuild.sh
+
 start_proxy:
 	scripts/haproxy/start.sh
 
 stop_proxy:
 	scripts/haproxy/stop.sh
-
-rebuild_proxy:
-	scripts/haproxy/rebuild.sh
 
 open_proxy:
 	open http://localhost:8080
@@ -38,13 +41,13 @@ INSTANCES?=2
 split_cluster_repeatedly:
 	scripts/repeatedly.sh -c "scripts/cluster/net_split.sh -i ${INSTANCES}" -d ${DURATION} ${OPTS}
 
-CONNECTIONS?=50
-THREADS?=10
+VUS?=10
 DURATION?=1m
-DEBUG?=false
-SHORT_URLS_COUNT?=
+HOST_URL?=http://localhost:4000
+BASE_SHORTEN_URL?=
+MAX_URL_COUNT?=
 stress_test_cluster:
-	wrk -s scripts/stress_test.lua -c${CONNECTIONS} -t${THREADS} -d${DURATION} http://localhost:4000 ${BASE_URL} ${DEBUG} ${SHORT_URLS_COUNT}
+	k6 run -u ${VUS} -d ${DURATION} -e HOST_URL=${HOST_URL} -e BASE_SHORTEN_URL=${BASE_SHORTEN_URL} -e MAX_URL_COUNT=${MAX_URL_COUNT} scripts/stress_test.js
 
 ci:
 	echo "Running formatter..."
