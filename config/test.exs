@@ -6,11 +6,9 @@ config :abbr, AbbrWeb.Endpoint,
 
 config :logger, level: :warn
 
-# in tests, cluster is setup manually, via LocalCluster
-# hence, no need to declare hosts upfront
-# we can also skip gossip protocol entirely
-# takes care of sporadic connection warnings
-config :abbr,
+# in tests, cluster is setup manually, via LocalCluster, no need to declare hosts upfront
+# we can also skip gossip protocol entirely, reduces sporadic connection warnings
+config :libcluster,
   topologies: [
     local: [
       strategy: Cluster.Strategy.Epmd,

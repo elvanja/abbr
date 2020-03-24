@@ -12,10 +12,7 @@ config :logger, :console,
 
 config :phoenix, :json_library, Jason
 
-# need to place libcluster config under :abbr due to local_cluster issue
-# this way the configuration is propagated correctly to test nodes
-# see https://github.com/whitfin/local-cluster/issues/13 for details
-config :abbr,
+config :libcluster,
   topologies: [
     local: [
       strategy: Cluster.Strategy.Gossip,

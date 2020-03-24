@@ -7,7 +7,7 @@ defmodule Abbr.Application do
 
   def start(_type, _args) do
     Confex.resolve_env!(:abbr)
-    topologies = Confex.fetch_env!(:abbr, :topologies)
+    topologies = Confex.fetch_env!(:libcluster, :topologies)
 
     children = [
       {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},
