@@ -214,6 +214,70 @@ And it behaves exactly as expected.
 Submission of long URL to shorten worked in all cases.
 But due to network splits, we now have some get requests to short URL that returned 404, as expected.
 
+## What about network splits that never heal?
+
+Let's see how that goes:
+```bash
+make stress_test_cluster VUS=50 DURATION=10s BASE_SHORTEN_URL=https://www.original.com/very-very-long-slug-to-shorten-in-2020
+```
+
+And in another shell, after the test has been started:
+```bash
+make leave_cluster INSTANCE=1
+```
+
+The result is pretty much the same as with previous case.
+The main problem is that the data is in fact never synchronized between nodes in the cluster.
+But, that's not in the scope of this test.
+
+## What about node being shutdown?
+
+Sure! Let's see how it can be tested:
+```bash
+make stress_test_cluster VUS=50 DURATION=10s BASE_SHORTEN_URL=https://www.original.com/very-very-long-slug-to-shorten-in-2020
+```
+
+And in another shell, after the test has been started:
+```bash
+make stop_cluster INSTANCE=1
+```
+
+The result:
+```bash
+WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
+ERRO[0011] Error creating, status: 0
+WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
+ERRO[0011] Error creating, status: 0
+WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
+ERRO[0011] Error creating, status: 0
+
+    █ execute
+      ✓ correct redirect
+      ✓ status is 302
+
+    █ create
+      ✗ status is 201
+       ↳  99% — ✓ 5836 / ✗ 3
+      ✗ short URL returned
+       ↳  99% — ✓ 5836 / ✗ 3
+
+    checks.....................: 99.97% ✓ 23984 ✗ 6
+    create_duration............: avg=41.388542 min=7.425  med=32.146  max=289.44   p(90)=77.498   p(95)=91.5776
+    create_error_rate..........: 0.05%  ✓ 3     ✗ 5836
+    execute_duration...........: avg=38.862634 min=6.041  med=28.8525 max=408.968  p(90)=75.055   p(95)=88.59125
+    execute_error_rate.........: 0.00%  ✓ 0     ✗ 6156
+    http_req_duration..........: avg=40.09ms   min=6.04ms med=30.46ms max=408.96ms p(90)=76.34ms  p(95)=90.01ms
+    http_reqs..................: 11995  1199.482844/s
+```
+
+After the instance left the cluster:
+- create requests that have been initiated on dropped instance failed
+- but that's a smaller problem since client can repeat the request
+- subsequent requests to short URL are executed on the remaining instance, balanced via proxy
+- and are successful because all data is in remaining instance already
+- that instance handles all new create requests as well
+- therefore no requests to short URL failed
+
 ## Additional notes
 
 For required [Erlang](https://www.erlang.org) and [Elixir](https://elixir-lang.org) versions, check out [.tool-versions](.tool-versions).
