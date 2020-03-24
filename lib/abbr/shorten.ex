@@ -7,7 +7,7 @@ defmodule Abbr.Shorten do
   alias Abbr.Cache
   alias Abbr.Url
 
-  @hash_key "abbr:url"
+  @hash_key "9373a09d-62c2-40cf-8049-2fb953008f78-e998bdba-3275-470e-b4fe-10ff3bd3eda3"
 
   @spec given(Url.original()) :: {:ok, Url.short()} | :error
   def given(original) do
@@ -26,6 +26,6 @@ defmodule Abbr.Shorten do
     :sha256
     |> :crypto.hmac(@hash_key, original)
     |> Base.encode16()
-    |> String.slice(0, 6)
+    |> String.slice(0, 8)
   end
 end

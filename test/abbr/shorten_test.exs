@@ -14,4 +14,10 @@ defmodule Abbr.ShortenTest do
     url = Cache.lookup(short)
     assert url.original == "http://original.com"
   end
+
+  test "does not duplicate short url for similar originals" do
+    {:ok, short1} = Shorten.given("https://www.original.com/very-very-long-slug-to-shorten-in-2020?q=3-263")
+    {:ok, short2} = Shorten.given("https://www.original.com/very-very-long-slug-to-shorten-in-2020?q=18-961")
+    refute short1 == short2
+  end
 end
