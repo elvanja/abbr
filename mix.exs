@@ -18,7 +18,11 @@ defmodule Abbr.MixProject do
   def application do
     [
       mod: {Abbr.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [
+        :logger,
+        :runtime_tools,
+        :logger_file_backend
+      ]
     ]
   end
 
@@ -50,6 +54,7 @@ defmodule Abbr.MixProject do
       {:jason, "~> 1.0"},
       {:libcluster, "~> 3.1"},
       {:local_cluster, "~> 1.1", only: [:dev, :test]},
+      {:logger_file_backend, "~> 0.0.11"},
       {:phoenix, "~> 1.4.1"},
       {:phoenix_pubsub, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
