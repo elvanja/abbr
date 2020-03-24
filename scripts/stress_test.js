@@ -36,15 +36,18 @@ function create_short_url(host_url, long_url) {
             headers: {"Content-Type": "application/json"}
         });
 
+        short_url = JSON.parse(response.body || "{}").short_url;
+
         const check_result = check(response, {
             "status is 201": (r) => r.status === 201,
-            "short URL returned": (r) => JSON.parse(r.body).hasOwnProperty("short_url")
+            "short URL returned": (r) => JSON.parse(r.body || "{}").hasOwnProperty("short_url")
         });
 
+        if (response.status !== 201) {
+            console.error(`Error creating, status: ${response.status}`);
+        }
         create_duration.add(response.timings.duration);
         create_error_rate.add(!check_result);
-
-        short_url = JSON.parse(response.body).short_url;
     });
 
     return short_url;
@@ -73,20 +76,22 @@ export default function([host_url, base_shorten_url, max_url_count]) {
         short_urls[selected_index] = short_url;
     }
 
-    group("execute", function () {
-        const response = http.get(short_url, {redirects: 0});
+    if (short_url !== undefined) {
+        group("execute", function () {
+            const response = http.get(short_url, {redirects: 0});
 
-        const check_result = check(response, {
-            "status is 302": (r) => r.status === 302,
-            "correct redirect": (r) => r.headers.Location === long_url
+            const check_result = check(response, {
+                "status is 302": (r) => r.status === 302,
+                "correct redirect": (r) => r.headers.Location === long_url
+            });
+
+            if (response.status !== 404 && response.headers.Location !== long_url) {
+                console.error(`Invalid redirect detected, short: ${short_url}, expected: ${long_url}, got: ${response.headers.Location} [${response.status}]`);
+            }
+
+            execute_duration.add(response.timings.duration);
+            execute_error_rate.add(!check_result);
+            if (response.status === 404) execute_not_found.add(1);
         });
-
-        if (response.headers.Location !== long_url) {
-            console.error(`Invalid redirect detected, short: ${short_url}, expected: ${long_url}, got: ${response.headers.Location}`);
-        }
-
-        execute_duration.add(response.timings.duration);
-        execute_error_rate.add(!check_result);
-        if (response.status === 404) execute_not_found.add(1);
-    });
+    }
 }
