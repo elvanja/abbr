@@ -1,32 +1,16 @@
 defmodule Abbr.Cache do
   @moduledoc """
-  Caches shortened and original URLs
+  Central hub for cache, the only one that knows which caching mechanism is to be used.
   """
 
-  alias Abbr.LocalCache
-  alias Abbr.Url
+  alias Abbr.RpcCache
 
-  require Logger
-
-  @events_topic "cache_events"
-
-  defdelegate lookup(short), to: LocalCache
-
+  @doc """
+  Topic to which cache events will be broadcast.
+  """
   @spec events_topic :: String.t()
-  def events_topic, do: @events_topic
+  def events_topic, do: "cache_events"
 
-  @spec save(%Url{}) :: :ok | :error
-  def save(url) do
-    case :rpc.multicall(LocalCache, :save, [url], :timer.seconds(5)) do
-      {_, []} ->
-        :ok
-
-      {_, failed_nodes} ->
-        # successfully saved data can be safely ignored
-        # new attempts to save the same URL will overwrite the data
-        # the only downside being memory used by unreachable data
-        Logger.error("Could not save #{inspect(url)} to: #{inspect(failed_nodes)}")
-        :error
-    end
-  end
+  defdelegate lookup(short), to: RpcCache
+  defdelegate save(url), to: RpcCache
 end

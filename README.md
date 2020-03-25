@@ -74,8 +74,12 @@ Here's a brief overview of ideas used to tackle this (the order of appearance is
 - [Partisan](https://partisan.cloud)
 - [Riak Core](https://github.com/basho/riak_core)
 
-For the moment, only the first one from the list is done.
-So stay tuned for more :-)
+For the moment, only the first one from the list is done. It uses:
+- local cache that stores data in ETS table, see [`Abbr.LocalCache`](lib/abbr/local_cache.ex)
+- distributed cache that stores new data to all the nodes in their respective local cache, see [`Abbr.RpcCache`](lib/abbr/rpc_cache.ex)
+- cache synchronization service that is triggered on cluster topology changes, see [`Abbr.LocalCacheSync`](lib/abbr/local_cache_sync.ex)
+
+Stay tuned for more :-)
 
 ## I'd like to see it in action!
 

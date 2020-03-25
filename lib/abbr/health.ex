@@ -1,6 +1,6 @@
 defmodule Abbr.Health do
   @moduledoc """
-  Carries information on whether this instance is in good health or not
+  Carries information on whether this instance is in good health or not.
   """
 
   alias Abbr.Cache

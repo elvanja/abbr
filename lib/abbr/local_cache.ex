@@ -1,6 +1,6 @@
 defmodule Abbr.LocalCache do
   @moduledoc """
-  Caches shortened and original URLs on local node
+  Caches shortened and original URLs on local node.
   """
 
   alias Abbr.ETSTableManager
