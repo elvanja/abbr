@@ -20,11 +20,16 @@ import { check, group } from "k6";
 import { Counter, Rate, Trend } from "k6/metrics";
 
 const short_urls = {};
+
 const create_duration = new Trend("create_duration");
 const create_error_rate = new Rate("create_error_rate");
+const create_500 = new Counter("create_500");
+const create_503 = new Counter("create_503");
+
 const execute_duration = new Trend("execute_duration");
 const execute_error_rate = new Rate("execute_error_rate");
-const execute_not_found = new Counter("execute_not_found");
+const execute_404 = new Counter("execute_404");
+const execute_503 = new Counter("execute_503");
 
 function create_short_url(host_url, long_url) {
     let short_url = undefined;
@@ -36,16 +41,29 @@ function create_short_url(host_url, long_url) {
             headers: {"Content-Type": "application/json"}
         });
 
-        short_url = JSON.parse(response.body || "{}").short_url;
+        if (response.status === 201) {
+            short_url = JSON.parse(response.body || "{}").short_url;
+        }
 
         const check_result = check(response, {
             "status is 201": (r) => r.status === 201,
-            "short URL returned": (r) => JSON.parse(r.body || "{}").hasOwnProperty("short_url")
+            "short URL returned": () => short_url !== undefined
         });
 
-        if (response.status !== 201) {
-            console.error(`Error creating, status: ${response.status}`);
+        switch (response.status) {
+            case 201:
+                break;
+            case 500:
+                create_500.add(1);
+                break;
+            case 503:
+                create_503.add(1);
+                break;
+            default:
+                console.error(`Error creating, status: ${response.status}`);
+                console.error(JSON.stringify(response));
         }
+
         create_duration.add(response.timings.duration);
         create_error_rate.add(!check_result);
     });
@@ -85,13 +103,25 @@ export default function([host_url, base_shorten_url, max_url_count]) {
                 "correct redirect": (r) => r.headers.Location === long_url
             });
 
-            if (response.status !== 404 && response.headers.Location !== long_url) {
-                console.error(`Invalid redirect detected, short: ${short_url}, expected: ${long_url}, got: ${response.headers.Location} [${response.status}]`);
+            switch (response.status) {
+                case 302:
+                    if (response.headers.Location !== long_url) {
+                        console.error(`Invalid redirect detected, short: ${short_url}, expected: ${long_url}, got: ${response.headers.Location} [${response.status}]`);
+                    }
+                    break;
+                case 404:
+                    execute_404.add(1);
+                    break;
+                case 503:
+                    execute_503.add(1);
+                    break;
+                default:
+                    console.error(`Error executing, status: ${response.status}`);
+                    console.error(JSON.stringify(response));
             }
 
             execute_duration.add(response.timings.duration);
             execute_error_rate.add(!check_result);
-            if (response.status === 404) execute_not_found.add(1);
         });
     }
 }

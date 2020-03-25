@@ -191,28 +191,33 @@ Upon joining the cluster:
 You will get a result like this (some data omitted for brevity): 
 ```bash
     █ create
-      ✓ status is 201
-      ✓ short URL returned
+      ✗ status is 201
+       ↳  99% — ✓ 13168 / ✗ 1
+      ✗ short URL returned
+       ↳  99% — ✓ 13168 / ✗ 1
 
     █ execute
       ✗ status is 302
-       ↳  95% — ✓ 13231 / ✗ 598
+       ↳  99% — ✓ 15204 / ✗ 105
       ✗ correct redirect
-       ↳  95% — ✓ 13231 / ✗ 598
+       ↳  99% — ✓ 15204 / ✗ 105
 
-    checks.....................: 97.68% ✓ 50514 ✗ 1196
-    create_duration............: avg=19.88678  min=4.578  med=18.2045 max=98.558   p(90)=28.616  p(95)=33.43125
-    create_error_rate..........: 0.00%  ✓ 0     ✗ 12076
-    execute_duration...........: avg=17.942357 min=4.757  med=16.522  max=97.21    p(90)=25.0696 p(95)=29.2939
-    execute_error_rate.........: 4.33%  ✓ 598   ✗ 13181
-    execute_not_found..........: 598    59.799404/s
-    http_req_duration..........: avg=18.85ms   min=4.57ms med=17.3ms  max=98.55ms  p(90)=26.89ms p(95)=31.39ms
-    http_reqs..................: 25855  2585.474214/s
-``` 
+    checks.....................: 99.62% ✓ 56602 ✗ 212
+    create_500.................: 1      0.099998/s
+    create_duration............: avg=17.846174 min=5.414  med=16.2    max=102.087  p(90)=25.0489 p(95)=29.1378
+    create_error_rate..........: 0.00%  ✓ 1     ✗ 13147
+    execute_404................: 105    10.499811/s
+    execute_duration...........: avg=16.513127 min=4.29   med=15.257  max=100.729  p(90)=22.734  p(95)=26.408
+    execute_error_rate.........: 0.68%  ✓ 105   ✗ 15154
+    http_req_duration..........: avg=17.13ms   min=4.29ms med=15.66ms max=102.08ms p(90)=23.84ms p(95)=27.74ms
+    http_reqs..................: 28407  2840.648883/s
+```
 
-And it behaves exactly as expected.
-Submission of long URL to shorten worked in all cases.
-But due to network splits, we now have some get requests to short URL that returned 404, as expected.
+And it behaves exactly as expected, almost.
+Submission of long URL to shorten worked in most cases.
+But, even those can fail if executed during the network split, because nodes still try to synchronize data to now disconnected node.
+Service then rejects such submission with 500 status code, as can be seen in above example.
+Also, we now have some get requests to short URL that returned 404, as expected.
 
 ## What about network splits that never heal?
 
@@ -228,7 +233,9 @@ make leave_cluster INSTANCE=1
 
 The result is pretty much the same as with previous case.
 The main problem is that the data is in fact never synchronized between nodes in the cluster.
-But, that's not in the scope of this test.
+Proxy still sees both instances and balances requests accordingly.
+Thus, requests with unknown data hit both instances and we get the same situation with 404s.
+Creating also can fail, like described above, if submitting long URL occurs during the split. 
 
 ## What about node being shutdown?
 
@@ -244,39 +251,76 @@ make stop_cluster INSTANCE=1
 
 The result:
 ```bash
-WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
-ERRO[0011] Error creating, status: 0
-WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
-ERRO[0011] Error creating, status: 0
-WARN[0011] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
-ERRO[0011] Error creating, status: 0
+WARN[0006] Request Failed                                error="Post \"http://localhost:4000/api/urls\": EOF"
+ERRO[0006] Error creating, status: 0
+ERRO[0006] {"status":0,"body":null,"error":"EOF","error_code":1000}
+
+    █ execute
+      ✗ status is 302
+       ↳  99% — ✓ 5798 / ✗ 21
+      ✗ correct redirect
+       ↳  99% — ✓ 5798 / ✗ 21
+
+    █ create
+      ✗ status is 201
+       ↳  99% — ✓ 5506 / ✗ 30
+      ✗ short URL returned
+       ↳  99% — ✓ 5506 / ✗ 30
+
+    checks.....................: 99.55% ✓ 22608 ✗ 102
+    create_503.................: 29     2.899956/s
+    create_duration............: avg=34.988533 min=3.1    med=16.641  max=3057.344 p(90)=27.588  p(95)=37.88225
+    create_error_rate..........: 0.54%  ✓ 30    ✗ 5506
+    execute_503................: 21     2.099968/s
+    execute_duration...........: avg=27.821442 min=3.593  med=15.461  max=3107.249 p(90)=23.9268 p(95)=28.1361
+    execute_error_rate.........: 0.36%  ✓ 21    ✗ 5798
+    http_req_duration..........: avg=31.31ms   min=3.1ms  med=16.06ms max=3.1s     p(90)=25.48ms p(95)=31.51ms
+    http_reqs..................: 11355  1135.482718/s
+```
+
+Again similar situation as with previous examples.
+One noticeable difference is the occurrence of create request failure with status 0.
+It is because stopped instance could not complete the response and so the stress test got and empty response.
+This didn't occur with network splits simply because instances kept living and were able to complete requests.
+
+## What if a new node joins the cluster?
+
+This time, start only a part of the cluster:
+```bash          
+make start_cluster INSTANCE=1
+```
+
+Now start the tests:
+```bash
+make stress_test_cluster VUS=50 DURATION=10s BASE_SHORTEN_URL=https://www.original.com/very-very-long-slug-to-shorten-in-2020
+```
+
+And in another shell, after the test has been started, join the new node:
+```bash
+make start_cluster INSTANCE=2
+```
+
+And the result:
+```bash
+    █ create
+      ✓ status is 201
+      ✓ short URL returned
 
     █ execute
       ✓ correct redirect
       ✓ status is 302
 
-    █ create
-      ✗ status is 201
-       ↳  99% — ✓ 5836 / ✗ 3
-      ✗ short URL returned
-       ↳  99% — ✓ 5836 / ✗ 3
-
-    checks.....................: 99.97% ✓ 23984 ✗ 6
-    create_duration............: avg=41.388542 min=7.425  med=32.146  max=289.44   p(90)=77.498   p(95)=91.5776
-    create_error_rate..........: 0.05%  ✓ 3     ✗ 5836
-    execute_duration...........: avg=38.862634 min=6.041  med=28.8525 max=408.968  p(90)=75.055   p(95)=88.59125
-    execute_error_rate.........: 0.00%  ✓ 0     ✗ 6156
-    http_req_duration..........: avg=40.09ms   min=6.04ms med=30.46ms max=408.96ms p(90)=76.34ms  p(95)=90.01ms
-    http_reqs..................: 11995  1199.482844/s
+    checks.....................: 100.00% ✓ 51306 ✗ 0
+    create_duration............: avg=19.588962 min=5.042   med=16.7505 max=119.342  p(90)=29.7171 p(95)=39.938
+    create_error_rate..........: 0.00%   ✓ 0     ✗ 11990
+    execute_duration...........: avg=18.51048  min=3.686   med=16.296  max=128.483  p(90)=26.8914 p(95)=34.1911
+    execute_error_rate.........: 0.00%   ✓ 0     ✗ 13663
+    http_req_duration..........: avg=19.01ms   min=3.68ms  med=16.52ms max=128.48ms p(90)=28.17ms p(95)=36.37ms
+    http_reqs..................: 25653   2565.298032/s
 ```
 
-After the instance left the cluster:
-- create requests that have been initiated on dropped instance failed
-- but that's a smaller problem since client can repeat the request
-- subsequent requests to short URL are executed on the remaining instance, balanced via proxy
-- and are successful because all data is in remaining instance already
-- that instance handles all new create requests as well
-- therefore no requests to short URL failed
+New node doesn't start processing the requests until it is synced with the rest of the cluster.
+Therefore, there are no errors. 
 
 ## Additional notes
 
