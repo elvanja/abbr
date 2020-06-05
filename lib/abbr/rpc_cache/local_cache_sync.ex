@@ -1,4 +1,4 @@
-defmodule Abbr.LocalCacheSync do
+defmodule Abbr.RpcCache.LocalCacheSync do
   @moduledoc """
   Ensures cache stays in sync across cluster.
 
@@ -26,7 +26,7 @@ defmodule Abbr.LocalCacheSync do
   """
 
   alias Abbr.Cache
-  alias Abbr.LocalCache
+  alias Abbr.RpcCache.LocalCache
   alias Phoenix.PubSub
 
   use GenServer

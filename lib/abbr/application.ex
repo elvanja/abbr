@@ -16,10 +16,10 @@ defmodule Abbr.Application do
         start: {Phoenix.PubSub.Local, :start_link, [:abbr_pubsub, :abbr_pubsub_gc]}
       },
       AbbrWeb.Endpoint,
-      Abbr.Health,
-      {Abbr.ETSTableManager, [target_module: Abbr.LocalCache]},
-      Abbr.LocalCache,
-      Abbr.LocalCacheSync
+      Abbr.Cluster.Health,
+      {Abbr.Util.ETSTableManager, [target_module: Abbr.RpcCache.LocalCache]},
+      Abbr.RpcCache.LocalCache,
+      Abbr.RpcCache.LocalCacheSync
     ]
 
     opts = [strategy: :one_for_one, name: Abbr.Supervisor]

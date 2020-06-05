@@ -4,7 +4,7 @@ defmodule Abbr.RpcCache do
   in the cluster via [RPC](http://erlang.org/doc/man/rpc.html).
   """
 
-  alias Abbr.LocalCache
+  alias Abbr.RpcCache.LocalCache
   alias Abbr.Url
 
   require Logger

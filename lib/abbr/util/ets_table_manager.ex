@@ -1,4 +1,4 @@
-defmodule Abbr.ETSTableManager do
+defmodule Abbr.Util.ETSTableManager do
   @moduledoc """
   Ensures ETS table survives owner process crashes.
 
@@ -20,7 +20,7 @@ defmodule Abbr.ETSTableManager do
 
   defmacro __using__(_) do
     quote do
-      @behaviour Abbr.ETSTableManager
+      @behaviour Abbr.Util.ETSTableManager
 
       def handle_info({:"ETS-TRANSFER", table, _manager_pid, _data}, state) do
         {:noreply, on_receive_table(table, state)}

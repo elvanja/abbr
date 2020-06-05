@@ -1,7 +1,7 @@
 defmodule AbbrWeb.HealthController do
   use AbbrWeb, :controller
 
-  alias Abbr.Health
+  alias Abbr.Cluster.Health
 
   action_fallback AbbrWeb.FallbackController
 

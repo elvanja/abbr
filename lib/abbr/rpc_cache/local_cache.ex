@@ -1,9 +1,9 @@
-defmodule Abbr.LocalCache do
+defmodule Abbr.RpcCache.LocalCache do
   @moduledoc """
   Caches shortened and original URLs on local node.
   """
 
-  alias Abbr.ETSTableManager
+  alias Abbr.Util.ETSTableManager
   alias Abbr.Url
 
   use ETSTableManager

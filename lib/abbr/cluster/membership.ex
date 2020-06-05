@@ -1,4 +1,4 @@
-defmodule Abbr.Cluster do
+defmodule Abbr.Cluster.Membership do
   @moduledoc """
   Makes a node leave or join the cluster.
   This is achieved by (ab)using libcluster and it's supervisor a bit.

@@ -1,8 +1,9 @@
 alias Abbr.Cache
-alias Abbr.Cluster
+alias Abbr.Cluster.Membership
+alias Abbr.Cluster.Health
 alias Abbr.Expand
-alias Abbr.Health
-alias Abbr.LocalCache
-alias Abbr.LocalCacheSync
+alias Abbr.RpcCache
+alias Abbr.RpcCache.LocalCache
+alias Abbr.RpcCache.LocalCacheSync
 alias Abbr.Shorten
 alias Abbr.Url

@@ -1,4 +1,4 @@
-defmodule Abbr.Health do
+defmodule Abbr.Cluster.Health do
   @moduledoc """
   Carries information on whether this instance is in good health or not.
   """

@@ -75,9 +75,9 @@ Here's a brief overview of ideas used to tackle this (the order of appearance is
 - [Riak Core](https://github.com/basho/riak_core)
 
 For the moment, only the first one from the list is done. It uses:
-- local cache that stores data in ETS table, see [`Abbr.LocalCache`](lib/abbr/local_cache.ex)
+- local cache that stores data in ETS table, see [`Abbr.RpcCache.LocalCache`](lib/abbr/rpc_cache/local_cache.ex)
 - distributed cache that stores new data to all the nodes in their respective local cache, see [`Abbr.RpcCache`](lib/abbr/rpc_cache.ex)
-- cache synchronization service that is triggered on cluster topology changes, see [`Abbr.LocalCacheSync`](lib/abbr/local_cache_sync.ex)
+- cache synchronization service that is triggered on cluster topology changes, see [`Abbr.RpcCache.LocalCacheSync`](lib/abbr/rpc_cache/local_cache_sync.ex)
 
 Stay tuned for more :-)
 
@@ -173,7 +173,7 @@ instance 2 joined the cluster
 
 The splits occur randomly and last a random duration, distributed across given duration in seconds.
 Since it's not easy to create network splits locally, this uses a bit of a trick.
-It basically disconnects nodes via API call. See [`Abbr.Cluster`](lib/abbr/cluster.ex) for details.
+It basically disconnects nodes via API call. See [`Abbr.Cluster.Membership`](lib/abbr/cluster/membership.ex) for details.
 The effect is the same as network split.
 
 Upon leaving the cluster:
