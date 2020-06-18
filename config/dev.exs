@@ -2,6 +2,10 @@ import Config
 
 config :abbr, AbbrWeb.Endpoint,
   http: [port: {:system, :integer, "HTTP_PORT", 4000}],
+  url: [
+    host: {:system, :string, "ABBR_HOST", "localhost"},
+    port: {:system, :integer, "ABBR_PORT", 4000}
+  ],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
