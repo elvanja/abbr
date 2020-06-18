@@ -1,4 +1,4 @@
-import Config
+use Mix.Config
 
 config :abbr, AbbrWeb.Endpoint,
   url: [host: "localhost"],
@@ -8,7 +8,7 @@ config :abbr, AbbrWeb.Endpoint,
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [:node, :module, :request_id]
 
 config :phoenix, :json_library, Jason
 

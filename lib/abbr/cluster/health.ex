@@ -1,6 +1,10 @@
 defmodule Abbr.Cluster.Health do
   @moduledoc """
   Carries information on whether this instance is in good health or not.
+
+  We don't capture "out of sync" events.
+  Once network split occurs, each part thinks it's working correctly.
+  So, once a node is reported as in sync, it stays that way.
   """
 
   alias Abbr.Cache
@@ -18,6 +22,7 @@ defmodule Abbr.Cluster.Health do
 
   @impl GenServer
   def init(:ok) do
+    Logger.metadata(node: Node.self())
     PubSub.subscribe(Abbr.PubSub, Cache.events_topic())
     {:ok, false}
   end

@@ -8,14 +8,16 @@ config :abbr, AbbrWeb.Endpoint,
   ]
 
 config :logger,
-  backends: [{LoggerFileBackend, :error_log}]
+  backends: [{LoggerFileBackend, :file_log}]
+
+config :logger, :file_log,
+  path: "logs/prod.log",
+  level: :warn,
+  format: "$time $metadata[$level] $message\n",
+  metadata: [:node, :module, :request_id]
 
 config :logger,
   level: :info,
   compile_time_purge_matching: [[level_lower_than: :info]]
-
-config :logger, :error_log,
-  path: "logs/error.log",
-  level: :error
 
 import_config "prod.secret.exs"

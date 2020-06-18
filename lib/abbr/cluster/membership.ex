@@ -8,8 +8,12 @@ defmodule Abbr.Cluster.Membership do
   alias Abbr.ClusterSupervisor
   alias Cluster.Strategy
 
+  require Logger
+
   @spec leave :: :ok | {:error, String.t()}
   def leave do
+    Logger.metadata(node: Node.self())
+
     with :ok <- Supervisor.terminate_child(ClusterSupervisor, :local),
          :ok <-
            Strategy.disconnect_nodes(
@@ -18,18 +22,31 @@ defmodule Abbr.Cluster.Membership do
              {:erlang, :nodes, [:connected]},
              Node.list()
            ) do
+      Logger.warn("Left the cluster")
       :ok
     else
-      _ -> {:error, "could not leave cluster"}
+      reason ->
+        Logger.error("Could not leave cluster, reason: #{inspect(reason)}")
+        {:error, "could not leave cluster"}
     end
   end
 
   @spec join :: :ok | {:error, String.t()}
   def join do
+    Logger.metadata(node: Node.self())
+
     case Supervisor.restart_child(ClusterSupervisor, :local) do
-      {:ok, _} -> :ok
-      {:error, :running} -> :ok
-      _ -> {:error, "could not join cluster"}
+      {:ok, _} ->
+        Logger.warn("Joined the cluster")
+        :ok
+
+      {:error, :running} ->
+        Logger.warn("Already member of the cluster")
+        :ok
+
+      reason ->
+        Logger.error("Could not join cluster, reason: #{inspect(reason)}")
+        {:error, "could not join cluster"}
     end
   end
 end
