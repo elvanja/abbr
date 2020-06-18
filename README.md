@@ -63,21 +63,21 @@ Experience gained from trying out different options is the main goal.
 ## What approaches can I see here?
 
 Excellent question!
-Here's a brief overview of ideas used to tackle this (the order of appearance is totally arbitrary):
-- [GenServer](https://hexdocs.pm/elixir/GenServer.html), [ETS](https://elixir-lang.org/getting-started/mix-otp/ets.html) and [RPC](http://erlang.org/doc/man/rpc.html)
+Here's a brief overview of variations used to tackle this (the order of appearance is totally arbitrary):
+- the naive approach, using [ETS](https://elixir-lang.org/getting-started/mix-otp/ets.html) to store local data, see [RPC](docs/rpc.md)
+- using [Mnesia](https://erlang.org/doc/man/mnesia.html) for storage, see [Mnesia](docs/mnesia.md)
+
+Each one is a standalone solution that can be used to run the cluster.
+You can find related notes, gotchas and some measurements in respective docs.
+
+Other solutions will slowly make it's way to above list. Here are a few candidates:
+- [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
+- [Riak Core](https://github.com/basho/riak_core)
+- [Partisan](https://partisan.cloud)
 - [persistent_term](https://erlang.org/doc/man/persistent_term.html)
-- [Mnesia](https://erlang.org/doc/man/mnesia.html)
 - [Cachex](https://hexdocs.pm/cachex/getting-started.html)
 - [Nebulex](https://github.com/cabol/nebulex)
-- [CRDT](https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type)
 - [Phoenix Presence](https://hexdocs.pm/phoenix/Phoenix.Presence.html)
-- [Partisan](https://partisan.cloud)
-- [Riak Core](https://github.com/basho/riak_core)
-
-For the moment, only the first one from the list is done. It uses:
-- local cache that stores data in ETS table, see [`Abbr.RpcCache.LocalCache`](lib/abbr/rpc_cache/local_cache.ex)
-- distributed cache that stores new data to all the nodes in their respective local cache, see [`Abbr.RpcCache`](lib/abbr/rpc_cache.ex)
-- cache synchronization service that is triggered on cluster topology changes, see [`Abbr.RpcCache.LocalCacheSync`](lib/abbr/rpc_cache/local_cache_sync.ex)
 
 Stay tuned for more :-)
 
@@ -90,9 +90,10 @@ make start_cluster
 make start_proxy
 ```
 
+Make sure you set the `CACHE_STRATEGY` environment variable to desired cache strategy. 
 This will start two instances of the service and a [HAProxy](http://www.haproxy.org) in front of them.
 Note that proxy is built as a [docker](https://www.docker.com) container with appropriate [configuration](scripts/haproxy/haproxy.cfg), so you'll need to build the image via `make build_proxy` before first run.
-Proxy should then be available at http://localhost:4000, and it's admin panel can be accessed via `make open_proxy`.
+Proxy should then be available at [http://localhost:4000](http://localhost:4000), and it's admin panel can be accessed via `make open_proxy`.
 
 From here, you can shorten any URL via API call like this:
 ```bash
@@ -102,7 +103,7 @@ From here, you can shorten any URL via API call like this:
 
 After that, when you open returned short URL in browser, you will be redirected to the long URL.
 
-## Sure, but how does it behave under pressure?
+### Sure, but how does it behave under pressure?
 
 Ah, yes, just shortening the URL is not really that interesting.
 You can check out how it behaves under a load easily. You just need to install [k6](https://k6.io) first.
@@ -145,12 +146,12 @@ What happens is:
 - each submit request lands on one of the instances, balanced via proxy
 - long URL is shortened and that information is synchronized between instances
 - subsequent requests to short URL are executed on one or the other instance, balanced via proxy
-- and are successful because all instances have up to date data
+- and are successful because all instances have up to date data (at least that's what we're aiming for)
 
 So, ideally, all checks passed and both error rates are at 0.
-And for local testing on the started and stable cluster it will be just like that, as the test results show.
+You can see the numbers for various scenarios in respective strategy doc.
 
-## How does it behave given network failures?
+### How does it behave given network failures?
 
 That's of most interest after all!
 The scenario is very much similar to the ideal case. We start the stress test as before:
@@ -171,7 +172,7 @@ instance 2 left the cluster
 instance 2 joined the cluster
 ```          
 
-The splits occur randomly and last a random duration, distributed across given duration in seconds.
+The splits occur randomly and last a random duration, distributed across given total duration in seconds.
 Since it's not easy to create network splits locally, this uses a bit of a trick.
 It basically disconnects nodes via API call. See [`Abbr.Cluster.Membership`](lib/abbr/cluster/membership.ex) for details.
 The effect is the same as network split.
@@ -217,13 +218,13 @@ You will get a result like this (some data omitted for brevity):
     http_reqs..................: 28407  2840.648883/s
 ```
 
-And it behaves exactly as expected, almost.
+And it behaves exactly as expected, almost :)
 Submission of long URL to shorten worked in most cases.
 But, even those can fail if executed during the network split, because nodes still try to synchronize data to now disconnected node.
 Service then rejects such submission with 500 status code, as can be seen in above example.
 Also, we now have some get requests to short URL that returned 404, as expected.
 
-## What about network splits that never heal?
+### What about network splits that never heal?
 
 Let's see how that goes:
 ```bash
@@ -239,9 +240,9 @@ The result is pretty much the same as with previous case.
 The main problem is that the data is in fact never synchronized between nodes in the cluster.
 Proxy still sees both instances and balances requests accordingly.
 Thus, requests with unknown data hit both instances and we get the same situation with 404s.
-Creating also can fail, like described above, if submitting long URL occurs during the split. 
+Creating can also fail, like described above, if submitting long URL occurs during the split. 
 
-## What about node being shutdown?
+### What about node being shutdown?
 
 Sure! Let's see how it can be tested:
 ```bash
@@ -287,7 +288,7 @@ One noticeable difference is the occurrence of create request failure with statu
 It is because stopped instance could not complete the response and so the stress test got and empty response.
 This didn't occur with network splits simply because instances kept living and were able to complete requests.
 
-## What if a new node joins the cluster?
+### What if a new node joins the cluster?
 
 This time, start only a part of the cluster:
 ```bash          
@@ -325,6 +326,18 @@ And the result:
 
 New node doesn't start processing the requests until it is synced with the rest of the cluster.
 Therefore, there are no errors. 
+
+## Working assumptions
+
+When network partitions occur, the provided cache solutions need some way to reconcile the differences.
+For this particular problem we're in luck because the shortening algorithm is deterministic, it yields the same short URL for same long URL.
+Hence, it is safe to just merge all the data between partitions/nodes.
+There are no update conflicts, URLs shortened in one cluster partition and missing in the other can be safely inserted to that other partition. 
+Also, data already existing in other partition can be just ignored or written over since they're the same.
+
+Also, we assume that all cluster nodes are of same application type.
+It wouldn't be much of a problem to introduce a mechanism that takes only `cache` nodes into account.
+But, that is not the subject of this experiment, so it has been left out.
 
 ## Additional notes
 

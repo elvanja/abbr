@@ -21,6 +21,7 @@ defmodule AbbrWeb.Endpoint do
     plug Phoenix.CodeReloader
   end
 
+  plug :add_node_to_logger_metadata
   plug Plug.RequestId
   plug Plug.Logger
 
@@ -41,4 +42,9 @@ defmodule AbbrWeb.Endpoint do
     signing_salt: "vo11+QiA"
 
   plug AbbrWeb.Router
+
+  def add_node_to_logger_metadata(conn, _) do
+    Logger.metadata(node: Node.self())
+    conn
+  end
 end

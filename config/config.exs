@@ -22,4 +22,9 @@ config :libcluster,
     ]
   ]
 
+config :abbr, :cache_strategy, {:system, "CACHE_STRATEGY", "rpc"}
+
+config :mnesia,
+  dir: '.mnesia/#{Mix.env()}/#{node()}'
+
 import_config "#{Mix.env()}.exs"

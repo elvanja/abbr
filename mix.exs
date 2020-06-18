@@ -55,6 +55,7 @@ defmodule Abbr.MixProject do
       {:libcluster, "~> 3.1"},
       {:local_cluster, "~> 1.1", only: [:dev, :test]},
       {:logger_file_backend, "~> 0.0.11"},
+      {:memento, github: "sheharyarn/memento"},
       {:phoenix, "~> 1.4.1"},
       {:phoenix_pubsub, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},

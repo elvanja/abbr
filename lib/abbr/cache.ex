@@ -3,7 +3,15 @@ defmodule Abbr.Cache do
   Central hub for cache, the only one that knows which caching mechanism is to be used.
   """
 
-  alias Abbr.RpcCache
+  alias Abbr.Mnesia
+  alias Abbr.Rpc
+  alias Abbr.Url
+
+  require Logger
+
+  @callback lookup(Url.short()) :: Url.t() | nil
+
+  @callback save(Url.t()) :: :ok | :error
 
   @doc """
   Topic to which cache events will be broadcast.
@@ -11,6 +19,16 @@ defmodule Abbr.Cache do
   @spec events_topic :: String.t()
   def events_topic, do: "cache_events"
 
-  defdelegate lookup(short), to: RpcCache
-  defdelegate save(url), to: RpcCache
+  def lookup(short), do: apply(cache_module(), :lookup, [short])
+
+  def save(url), do: apply(cache_module(), :save, [url])
+
+  defp cache_module do
+    Logger.metadata(node: Node.self())
+
+    case Application.get_env(:abbr, :cache_strategy) do
+      "rpc" -> Rpc
+      "mnesia" -> Mnesia
+    end
+  end
 end

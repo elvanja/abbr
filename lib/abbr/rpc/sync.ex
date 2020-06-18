@@ -1,4 +1,4 @@
-defmodule Abbr.RpcCache.LocalCacheSync do
+defmodule Abbr.Rpc.Sync do
   @moduledoc """
   Ensures cache stays in sync across cluster.
 
@@ -6,17 +6,6 @@ defmodule Abbr.RpcCache.LocalCacheSync do
   - detects when a new node has joined the cluster
   - waits until related cache process is started on that node
   - and sends local cache to that node
-
-  Relies on the fact that all newly connected nodes receive `nodeup` event.
-  This ensures all nodes in newly formed cluster will exchange their data.
-  Inherently covers new nodes being started too.
-
-  Problems:
-  - assumes all new nodes are of same application type
-    if not, it will indefinitely wait for cache process on that node
-  - it's a little gossipy since all nodes in all parts of the cluster will try to sync
-    when in fact, only a single node sync from one part of the split would do just fine
-  - entire cache is synced instead of just differences
 
   Related to waiting for __MODULE__ process on new node,
   we can't just cast to new node, since freshly started nodes don't run that process yet.
@@ -26,10 +15,12 @@ defmodule Abbr.RpcCache.LocalCacheSync do
   """
 
   alias Abbr.Cache
-  alias Abbr.RpcCache.LocalCache
+  alias Abbr.Rpc.Local
   alias Phoenix.PubSub
 
   use GenServer
+
+  require Logger
 
   @spec start_link([any()]) :: {:ok, pid()}
   def start_link(opts) do
@@ -40,6 +31,7 @@ defmodule Abbr.RpcCache.LocalCacheSync do
 
   @impl GenServer
   def init(:ok) do
+    Logger.metadata(node: Node.self())
     :net_kernel.monitor_nodes(true)
     {:ok, nil}
   end
@@ -55,7 +47,7 @@ defmodule Abbr.RpcCache.LocalCacheSync do
 
   @impl GenServer
   def handle_cast({:merge, cached_data}, state) do
-    :ok = LocalCache.merge(cached_data)
+    :ok = Local.merge(cached_data)
     PubSub.broadcast(Abbr.PubSub, Cache.events_topic(), {:cache_event, :synchronized})
     {:noreply, state}
   end
@@ -69,7 +61,7 @@ defmodule Abbr.RpcCache.LocalCacheSync do
   @impl GenServer
   def handle_info({:sync_with, node}, state) do
     if cache_sync_running?(node) do
-      :ok = GenServer.cast({__MODULE__, node}, {:merge, LocalCache.export()})
+      :ok = GenServer.cast({__MODULE__, node}, {:merge, Local.export()})
     else
       Process.send_after(self(), {:sync_with, node}, 10)
     end

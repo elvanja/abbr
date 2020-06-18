@@ -35,4 +35,11 @@ abbr-*.tar
 # variables.
 /config/*.secret.exs
 
+# local environment
+.envrc.local
+
+# mnesia data
+.mnesia/
+
+# logs
 /logs

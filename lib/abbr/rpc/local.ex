@@ -1,10 +1,10 @@
-defmodule Abbr.RpcCache.LocalCache do
+defmodule Abbr.Rpc.Local do
   @moduledoc """
   Caches shortened and original URLs on local node.
   """
 
-  alias Abbr.Util.ETSTableManager
   alias Abbr.Url
+  alias Abbr.Util.ETSTableManager
 
   use ETSTableManager
   use GenServer
@@ -15,18 +15,18 @@ defmodule Abbr.RpcCache.LocalCache do
   @impl ETSTableManager
   def on_receive_table(table, _state), do: table
 
-  @spec save(%Url{}) :: :ok
-  def save(%Url{short: short, original: original}) do
-    true = :ets.insert(__MODULE__, {short, original})
-    :ok
-  end
-
-  @spec lookup(Url.short()) :: %Url{} | nil
+  @spec lookup(Url.short()) :: Url.t() | nil
   def lookup(short) when is_binary(short) do
     case :ets.lookup(__MODULE__, short) do
       [{^short, original}] -> %Url{short: short, original: original}
       [] -> nil
     end
+  end
+
+  @spec save(Url.t()) :: :ok | :error
+  def save(%Url{short: short, original: original}) do
+    true = :ets.insert(__MODULE__, {short, original})
+    :ok
   end
 
   @spec export :: list(any())

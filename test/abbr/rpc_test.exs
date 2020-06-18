@@ -1,10 +1,10 @@
-defmodule Abbr.DistributedCacheTest do
+defmodule Abbr.RpcTest do
   use Abbr.DataCase, async: false
 
-  alias Abbr.Cache
+  alias Abbr.Rpc
   alias Abbr.Url
 
-  @node_prefix "abbr_distributed_cache_cluster_"
+  @node_prefix "abbr_rpc_cluster_"
 
   setup_all do
     nodes = LocalCluster.start_nodes(@node_prefix, 3)
@@ -25,13 +25,13 @@ defmodule Abbr.DistributedCacheTest do
   test "syncs cache across stable cluster", %{nodes: [node1, node2, node3]} do
     urls = build_urls(100)
 
-    Enum.each(urls, &(:ok = :rpc.call(node1, Cache, :save, [&1])))
+    Enum.each(urls, &(:ok = :rpc.call(node1, Rpc, :save, [&1])))
 
     eventually(fn ->
       Enum.each(urls, fn url ->
-        assert :rpc.call(node1, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node2, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node3, Cache, :lookup, [url.short]) == url
+        assert :rpc.call(node1, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node2, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node3, Rpc, :lookup, [url.short]) == url
       end)
     end)
   end
@@ -42,22 +42,22 @@ defmodule Abbr.DistributedCacheTest do
     Schism.partition([node1, node2])
     Schism.partition([node3])
 
-    Enum.each(left_partition_urls, &(:ok = :rpc.call(node1, Cache, :save, [&1])))
-    Enum.each(right_partition_urls, &(:ok = :rpc.call(node3, Cache, :save, [&1])))
+    Enum.each(left_partition_urls, &(:ok = :rpc.call(node1, Rpc, :save, [&1])))
+    Enum.each(right_partition_urls, &(:ok = :rpc.call(node3, Rpc, :save, [&1])))
 
     eventually(fn ->
       Enum.each(left_partition_urls, fn url ->
-        assert :rpc.call(node1, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node2, Cache, :lookup, [url.short]) == url
-        refute :rpc.call(node3, Cache, :lookup, [url.short]) == url
+        assert :rpc.call(node1, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node2, Rpc, :lookup, [url.short]) == url
+        refute :rpc.call(node3, Rpc, :lookup, [url.short]) == url
       end)
     end)
 
     eventually(fn ->
       Enum.each(right_partition_urls, fn url ->
-        refute :rpc.call(node1, Cache, :lookup, [url.short]) == url
-        refute :rpc.call(node2, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node3, Cache, :lookup, [url.short]) == url
+        refute :rpc.call(node1, Rpc, :lookup, [url.short]) == url
+        refute :rpc.call(node2, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node3, Rpc, :lookup, [url.short]) == url
       end)
     end)
   end
@@ -68,24 +68,24 @@ defmodule Abbr.DistributedCacheTest do
     Schism.partition([node1, node2])
     Schism.partition([node3])
 
-    Enum.each(left_partition_urls, &(:ok = :rpc.call(node1, Cache, :save, [&1])))
-    Enum.each(right_partition_urls, &(:ok = :rpc.call(node3, Cache, :save, [&1])))
+    Enum.each(left_partition_urls, &(:ok = :rpc.call(node1, Rpc, :save, [&1])))
+    Enum.each(right_partition_urls, &(:ok = :rpc.call(node3, Rpc, :save, [&1])))
 
     Schism.heal([node1, node2, node3])
 
     eventually(fn ->
       Enum.each(left_partition_urls, fn url ->
-        assert :rpc.call(node1, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node2, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node3, Cache, :lookup, [url.short]) == url
+        assert :rpc.call(node1, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node2, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node3, Rpc, :lookup, [url.short]) == url
       end)
     end)
 
     eventually(fn ->
       Enum.each(right_partition_urls, fn url ->
-        assert :rpc.call(node1, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node2, Cache, :lookup, [url.short]) == url
-        assert :rpc.call(node3, Cache, :lookup, [url.short]) == url
+        assert :rpc.call(node1, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node2, Rpc, :lookup, [url.short]) == url
+        assert :rpc.call(node3, Rpc, :lookup, [url.short]) == url
       end)
     end)
   end
@@ -93,13 +93,13 @@ defmodule Abbr.DistributedCacheTest do
   test "new node receives the existing cache data", %{nodes: nodes} do
     urls = build_urls(100)
 
-    Enum.each(urls, &(:ok = :rpc.call(hd(nodes), Cache, :save, [&1])))
+    Enum.each(urls, &(:ok = :rpc.call(hd(nodes), Rpc, :save, [&1])))
 
     new_node = add_node()
 
     eventually(fn ->
       Enum.each(urls, fn url ->
-        assert :rpc.call(new_node, Cache, :lookup, [url.short]) == url
+        assert :rpc.call(new_node, Rpc, :lookup, [url.short]) == url
       end)
     end)
 
