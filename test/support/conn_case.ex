@@ -17,8 +17,10 @@ defmodule AbbrWeb.ConnCase do
 
   using do
     quote do
-      use Phoenix.ConnTest
       alias AbbrWeb.Router.Helpers, as: Routes
+
+      import Plug.Conn
+      import Phoenix.ConnTest
 
       @endpoint AbbrWeb.Endpoint
     end

@@ -97,7 +97,7 @@ defmodule Abbr.Mnesia.Sync do
         :ok
 
       false ->
-        Logger.warn("Detected netsplit on #{node}")
+        Logger.warning("Detected netsplit on #{node}")
         do_join(node)
     end
   end

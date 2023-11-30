@@ -15,10 +15,7 @@ defmodule Abbr.Application do
     children =
       [
         {Cluster.Supervisor, [topologies, [name: Abbr.ClusterSupervisor]]},
-        %{
-          id: Abbr.PubSub,
-          start: {Phoenix.PubSub.Local, :start_link, [:abbr_pubsub, :abbr_pubsub_gc]}
-        },
+        {Phoenix.PubSub, [name: Abbr.PubSub, adapter: Phoenix.PubSub.PG2]},
         AbbrWeb.Endpoint,
         Abbr.Cluster.Health
       ] ++ build_cache_children()

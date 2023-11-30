@@ -19,9 +19,9 @@ defmodule Abbr.Cache do
   @spec events_topic :: String.t()
   def events_topic, do: "cache_events"
 
-  def lookup(short), do: apply(cache_module(), :lookup, [short])
+  def lookup(short), do: cache_module().lookup(short)
 
-  def save(url), do: apply(cache_module(), :save, [url])
+  def save(url), do: cache_module().save(url)
 
   defp cache_module do
     Logger.metadata(node: Node.self())

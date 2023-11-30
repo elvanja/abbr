@@ -1,10 +1,10 @@
-use Mix.Config
+import Config
 
 config :abbr, AbbrWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "8T+abCxwCQqATxjaFRWI2uPwTHJM2QF7J9rbH31rat0C7NWCCZqfHEdzyi+AdLbJ",
   render_errors: [view: AbbrWeb.ErrorView, accepts: ~w(json)],
-  pubsub: [name: Abbr.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: Abbr.PubSub
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
@@ -25,6 +25,6 @@ config :libcluster,
 config :abbr, :cache_strategy, {:system, "CACHE_STRATEGY", "rpc"}
 
 config :mnesia,
-  dir: '.mnesia/#{Mix.env()}/#{node()}'
+  dir: ~c".mnesia/#{config_env()}/#{node()}"
 
-import_config "#{Mix.env()}.exs"
+import_config "#{config_env()}.exs"

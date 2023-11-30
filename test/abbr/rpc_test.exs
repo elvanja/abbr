@@ -130,7 +130,7 @@ defmodule Abbr.RpcTest do
   rescue
     error ->
       if retries >= 10 do
-        reraise error, System.stacktrace()
+        reraise error, __STACKTRACE__
       else
         :timer.sleep(200)
         eventually(f, retries + 1)

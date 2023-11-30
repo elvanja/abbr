@@ -22,7 +22,7 @@ defmodule Abbr.Cluster.Membership do
              {:erlang, :nodes, [:connected]},
              Node.list()
            ) do
-      Logger.warn("Left the cluster")
+      Logger.warning("Left the cluster")
       :ok
     else
       reason ->
@@ -37,11 +37,11 @@ defmodule Abbr.Cluster.Membership do
 
     case Supervisor.restart_child(ClusterSupervisor, :local) do
       {:ok, _} ->
-        Logger.warn("Joined the cluster")
+        Logger.warning("Joined the cluster")
         :ok
 
       {:error, :running} ->
-        Logger.warn("Already member of the cluster")
+        Logger.warning("Already member of the cluster")
         :ok
 
       reason ->

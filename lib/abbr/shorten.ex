@@ -23,8 +23,8 @@ defmodule Abbr.Shorten do
   end
 
   defp hash_original(original) do
-    :sha256
-    |> :crypto.hmac(@hash_key, original)
+    :hmac
+    |> :crypto.mac(:sha256, @hash_key, original)
     |> Base.encode16()
     |> String.slice(0, 8)
   end
